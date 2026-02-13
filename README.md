@@ -1,4 +1,3 @@
-
 # NC Commons Import Bot
 
 A Python bot that automatically imports files from [NC Commons](https://nccommons.org) to Wikipedia across multiple languages.
@@ -95,8 +94,11 @@ nc_commons_bot/
 ├── bot.py                  # Main entry point
 ├── config.yaml             # Configuration
 ├── credentials.ini         # Credentials (gitignored)
+├── credentials.ini.example # Credentials template
 ├── requirements.txt        # Python dependencies
+├── .gitignore              # Git ignore file
 └── src/                    # Source code
+    ├── __init__.py         # Package init
     ├── wiki_api.py         # MediaWiki API wrapper
     ├── parsers.py          # Wikitext parsing
     ├── uploader.py         # File upload logic
@@ -183,7 +185,7 @@ python -c "from src.database import Database; db = Database('./test.db'); print(
 
 ## License
 
-[Your license here]
+MIT License
 
 ## Credits
 
@@ -197,7 +199,4 @@ Uses:
 
 ## Support
 
-For issues or questions:
-
--   Open an issue on GitHub
--   Contact: [Your contact]
+For issues or questions, open an issue on GitHub.
