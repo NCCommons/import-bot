@@ -27,37 +27,31 @@ def setup_logging(config: dict):
             - backup_count: Number of backup files to keep
     """
     # Get logging configuration
-    log_level = getattr(logging, config.get('level', 'INFO').upper())
-    log_file = Path(config.get('file', './logs/bot.log'))
-    max_bytes = config.get('max_bytes', 10485760)  # 10MB default
-    backup_count = config.get('backup_count', 5)
+    log_level = getattr(logging, config.get("level", "INFO").upper())
+    log_file = Path(config.get("file", "./logs/bot.log"))
+    max_bytes = config.get("max_bytes", 10485760)  # 10MB default
+    backup_count = config.get("backup_count", 5)
 
     # Create logs directory
     log_file.parent.mkdir(parents=True, exist_ok=True)
 
     # File formatter (plain text for log files)
-    file_formatter = logging.Formatter(
-        '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-    )
+    file_formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 
     # Console formatter with colors (only for levelname)
     console_formatter = colorlog.ColoredFormatter(
-        '%(asctime)s - %(name)s - %(log_color)s%(levelname)s%(reset)s - %(message)s',
+        "%(asctime)s - %(name)s - %(log_color)s%(levelname)s%(reset)s - %(message)s",
         log_colors={
-            'DEBUG': 'cyan',
-            'INFO': 'green',
-            'WARNING': 'yellow',
-            'ERROR': 'red',
-            'CRITICAL': 'red,bg_white',
-        }
+            "DEBUG": "cyan",
+            "INFO": "green",
+            "WARNING": "yellow",
+            "ERROR": "red",
+            "CRITICAL": "red,bg_white",
+        },
     )
 
     # File handler with rotation
-    file_handler = RotatingFileHandler(
-        log_file,
-        maxBytes=max_bytes,
-        backupCount=backup_count
-    )
+    file_handler = RotatingFileHandler(log_file, maxBytes=max_bytes, backupCount=backup_count)
     file_handler.setFormatter(file_formatter)
 
     # Console handler with colors

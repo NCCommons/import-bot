@@ -3,12 +3,7 @@ Tests for wikitext parsing functions.
 """
 
 import pytest
-from src.parsers import (
-    parse_language_list,
-    extract_nc_templates,
-    remove_categories,
-    NCTemplate
-)
+from src.parsers import parse_language_list, extract_nc_templates, remove_categories, NCTemplate
 
 
 class TestParseLanguageList:
@@ -19,9 +14,9 @@ class TestParseLanguageList:
         languages = parse_language_list(sample_language_list_page)
 
         assert len(languages) == 3
-        assert 'en' in languages
-        assert 'ar' in languages
-        assert 'fr' in languages
+        assert "en" in languages
+        assert "ar" in languages
+        assert "fr" in languages
 
     def test_parse_empty_page(self):
         """Test parsing an empty page."""
@@ -44,8 +39,8 @@ class TestParseLanguageList:
         languages = parse_language_list(text)
 
         assert len(languages) == 2
-        assert 'en' in languages
-        assert 'ar' in languages
+        assert "en" in languages
+        assert "ar" in languages
 
 
 class TestExtractNCTemplates:
@@ -57,18 +52,18 @@ class TestExtractNCTemplates:
         templates = extract_nc_templates(text)
 
         assert len(templates) == 1
-        assert templates[0].filename == 'test.jpg'
-        assert templates[0].caption == 'Caption text'
+        assert templates[0].filename == "test.jpg"
+        assert templates[0].caption == "Caption text"
 
     def test_extract_multiple_templates(self, sample_nc_template_page):
         """Test extracting multiple NC templates."""
         templates = extract_nc_templates(sample_nc_template_page)
 
         assert len(templates) == 2
-        assert templates[0].filename == 'File1.jpg'
-        assert templates[0].caption == 'First image caption'
-        assert templates[1].filename == 'File2.jpg'
-        assert templates[1].caption == 'Second image caption'
+        assert templates[0].filename == "File1.jpg"
+        assert templates[0].caption == "First image caption"
+        assert templates[1].filename == "File2.jpg"
+        assert templates[1].caption == "Second image caption"
 
     def test_extract_template_without_caption(self):
         """Test extracting template without caption."""
@@ -76,8 +71,8 @@ class TestExtractNCTemplates:
         templates = extract_nc_templates(text)
 
         assert len(templates) == 1
-        assert templates[0].filename == 'image.jpg'
-        assert templates[0].caption == ''
+        assert templates[0].filename == "image.jpg"
+        assert templates[0].caption == ""
 
     def test_extract_no_templates(self):
         """Test page with no NC templates."""
@@ -92,22 +87,14 @@ class TestNCTemplate:
 
     def test_to_file_syntax(self):
         """Test conversion to file syntax."""
-        template = NCTemplate(
-            original_text="{{NC|test.jpg|My caption}}",
-            filename="test.jpg",
-            caption="My caption"
-        )
+        template = NCTemplate(original_text="{{NC|test.jpg|My caption}}", filename="test.jpg", caption="My caption")
 
         result = template.to_file_syntax()
         assert result == "[[File:test.jpg|thumb|My caption]]"
 
     def test_to_file_syntax_no_caption(self):
         """Test conversion without caption."""
-        template = NCTemplate(
-            original_text="{{NC|test.jpg}}",
-            filename="test.jpg",
-            caption=""
-        )
+        template = NCTemplate(original_text="{{NC|test.jpg}}", filename="test.jpg", caption="")
 
         result = template.to_file_syntax()
         assert result == "[[File:test.jpg|thumb|]]"
@@ -121,9 +108,9 @@ class TestRemoveCategories:
         text = "Some text\n[[Category:Test]]\nMore text"
         result = remove_categories(text)
 
-        assert '[[Category:Test]]' not in result
-        assert 'Some text' in result
-        assert 'More text' in result
+        assert "[[Category:Test]]" not in result
+        assert "Some text" in result
+        assert "More text" in result
 
     def test_remove_multiple_categories(self):
         """Test removing multiple categories."""
@@ -136,16 +123,16 @@ class TestRemoveCategories:
         """
         result = remove_categories(text)
 
-        assert '[[Category:' not in result
-        assert 'Content here' in result
-        assert 'More content' in result
+        assert "[[Category:" not in result
+        assert "Content here" in result
+        assert "More content" in result
 
     def test_remove_categories_case_insensitive(self):
         """Test case-insensitive category removal."""
         text = "[[category:Test]] [[CATEGORY:Test2]]"
         result = remove_categories(text)
 
-        assert '[[category:' not in result.lower()
+        assert "[[category:" not in result.lower()
 
     def test_no_categories(self):
         """Test text without categories."""

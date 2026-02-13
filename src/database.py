@@ -66,7 +66,8 @@ class Database:
     def _init_schema(self):
         """Create database tables if they don't exist."""
         with self._get_connection() as conn:
-            conn.executescript("""
+            conn.executescript(
+                """
                 CREATE TABLE IF NOT EXISTS uploads (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     filename TEXT NOT NULL,
@@ -90,7 +91,8 @@ class Database:
                 CREATE INDEX IF NOT EXISTS idx_uploads_lang ON uploads(language);
                 CREATE INDEX IF NOT EXISTS idx_uploads_status ON uploads(status);
                 CREATE INDEX IF NOT EXISTS idx_pages_lang ON pages(language);
-            """)
+            """
+            )
 
         logger.debug("Database schema initialized")
 
@@ -105,21 +107,18 @@ class Database:
             error: Error message if failed (optional)
         """
         with self._get_connection() as conn:
-            conn.execute("""
+            conn.execute(
+                """
                 INSERT OR REPLACE INTO uploads
                 (filename, language, status, error, uploaded_at)
                 VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
-            """, (filename, language, status, error))
+            """,
+                (filename, language, status, error),
+            )
 
         logger.debug(f"Recorded upload: {filename} ({language}) - {status}")
 
-    def record_page_processing(
-        self,
-        page_title: str,
-        language: str,
-        templates_found: int,
-        files_uploaded: int
-    ):
+    def record_page_processing(self, page_title: str, language: str, templates_found: int, files_uploaded: int):
         """
         Record page processing activity.
 
@@ -130,11 +129,14 @@ class Database:
             files_uploaded: Number of files successfully uploaded
         """
         with self._get_connection() as conn:
-            conn.execute("""
+            conn.execute(
+                """
                 INSERT OR REPLACE INTO pages
                 (page_title, language, templates_found, files_uploaded, processed_at)
                 VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
-            """, (page_title, language, templates_found, files_uploaded))
+            """,
+                (page_title, language, templates_found, files_uploaded),
+            )
 
         logger.debug(f"Recorded page: {page_title} ({language})")
 
@@ -150,12 +152,15 @@ class Database:
             True if file was previously uploaded successfully
         """
         with self._get_connection() as conn:
-            result = conn.execute("""
+            result = conn.execute(
+                """
                 SELECT COUNT(*) as count FROM uploads
                 WHERE filename = ? AND language = ? AND status = 'success'
-            """, (filename, language)).fetchone()
+            """,
+                (filename, language),
+            ).fetchone()
 
-            return result['count'] > 0
+            return result["count"] > 0
 
     def get_statistics(self, language: Optional[str] = None) -> Dict[str, int]:
         """
@@ -170,27 +175,34 @@ class Database:
         with self._get_connection() as conn:
             if language:
                 # Stats for specific language
-                uploads = conn.execute("""
+                uploads = conn.execute(
+                    """
                     SELECT COUNT(*) as count FROM uploads
                     WHERE language = ? AND status = 'success'
-                """, (language,)).fetchone()['count']
+                """,
+                    (language,),
+                ).fetchone()["count"]
 
-                pages = conn.execute("""
+                pages = conn.execute(
+                    """
                     SELECT COUNT(*) as count FROM pages
                     WHERE language = ?
-                """, (language,)).fetchone()['count']
+                """,
+                    (language,),
+                ).fetchone()["count"]
             else:
                 # Overall stats
-                uploads = conn.execute("""
+                uploads = conn.execute(
+                    """
                     SELECT COUNT(*) as count FROM uploads
                     WHERE status = 'success'
-                """).fetchone()['count']
+                """
+                ).fetchone()["count"]
 
-                pages = conn.execute("""
+                pages = conn.execute(
+                    """
                     SELECT COUNT(*) as count FROM pages
-                """).fetchone()['count']
+                """
+                ).fetchone()["count"]
 
-            return {
-                'total_uploads': uploads,
-                'total_pages': pages
-            }
+            return {"total_uploads": uploads, "total_pages": pages}

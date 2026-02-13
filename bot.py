@@ -39,36 +39,30 @@ def load_credentials() -> dict:
         KeyError: If required environment variables are missing
     """
     # Load from .env file if it exists
-    env_file = '.env'
+    env_file = ".env"
     if Path(env_file).exists():
         load_dotenv(env_file)
     else:
         raise FileNotFoundError(
-            f"Environment file not found: {env_file}\n"
-            f"Please copy .env.example to .env and fill in your credentials"
+            f"Environment file not found: {env_file}\n" f"Please copy .env.example to .env and fill in your credentials"
         )
 
     # Get credentials from environment variables
     try:
         return {
-            'nc_username': os.environ['NCCOMMONS_USERNAME'],
-            'nc_password': os.environ['NCCOMMONS_PASSWORD'],
-            'wiki_username': os.environ['WIKIPEDIA_USERNAME'],
-            'wiki_password': os.environ['WIKIPEDIA_PASSWORD']
+            "nc_username": os.environ["NCCOMMONS_USERNAME"],
+            "nc_password": os.environ["NCCOMMONS_PASSWORD"],
+            "wiki_username": os.environ["WIKIPEDIA_USERNAME"],
+            "wiki_password": os.environ["WIKIPEDIA_PASSWORD"],
         }
     except KeyError as e:
         raise KeyError(
-            f"Missing environment variable: {e}\n"
-            f"Please ensure all required variables are set in {env_file}"
+            f"Missing environment variable: {e}\n" f"Please ensure all required variables are set in {env_file}"
         )
 
 
 def process_language(
-    language_code: str,
-    config: dict,
-    credentials: dict,
-    nc_api: NCCommonsAPI,
-    database: Database
+    language_code: str, config: dict, credentials: dict, nc_api: NCCommonsAPI, database: Database
 ) -> dict:
     """
     Process all pages for a single language.
@@ -89,11 +83,7 @@ def process_language(
     logger.info(f"{'='*60}")
 
     # Create Wikipedia API client for this language
-    wiki_api = WikipediaAPI(
-        language_code,
-        credentials['wiki_username'],
-        credentials['wiki_password']
-    )
+    wiki_api = WikipediaAPI(language_code, credentials["wiki_username"], credentials["wiki_password"])
 
     # Create uploader
     uploader = FileUploader(nc_api, wiki_api, database, config)
@@ -102,31 +92,27 @@ def process_language(
     processor = PageProcessor(wiki_api, uploader, database, config)
 
     # Get pages with NC template
-    max_pages = config['processing']['max_pages_per_language']
-    pages = wiki_api.get_pages_with_template('Template:NC', limit=max_pages)
+    max_pages = config["processing"]["max_pages_per_language"]
+    pages = wiki_api.get_pages_with_template("Template:NC", limit=max_pages)
 
     logger.info(f"Found {len(pages)} pages to process")
 
     # Process each page
-    stats = {
-        'pages_processed': 0,
-        'pages_modified': 0,
-        'errors': 0
-    }
+    stats = {"pages_processed": 0, "pages_modified": 0, "errors": 0}
 
     for i, page_title in enumerate(pages, 1):
         logger.info(f"[{i}/{len(pages)}] Processing: {page_title}")
 
         try:
             modified = processor.process_page(page_title)
-            stats['pages_processed'] += 1
+            stats["pages_processed"] += 1
 
             if modified:
-                stats['pages_modified'] += 1
+                stats["pages_modified"] += 1
 
         except Exception as e:
             logger.error(f"Error processing page {page_title}: {e}")
-            stats['errors'] += 1
+            stats["errors"] += 1
 
     # Get database statistics for this language
     db_stats = database.get_statistics(language_code)
@@ -145,42 +131,38 @@ def main():
     """Main entry point for the bot."""
     # Parse command-line arguments
     parser = argparse.ArgumentParser(
-        description='NC Commons to Wikipedia Import Bot',
+        description="NC Commons to Wikipedia Import Bot",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
             Examples:
             python bot.py                     # Process all languages
             python bot.py --lang ar           # Process only Arabic
             python bot.py --lang en --lang fr # Process English and French
-            """
+            """,
     )
 
-    parser.add_argument(
-        '--config',
-        default='config.yaml',
-        help='Path to configuration file (default: config.yaml)'
-    )
+    parser.add_argument("--config", default="config.yaml", help="Path to configuration file (default: config.yaml)")
 
     parser.add_argument(
-        '--lang',
-        action='append',
-        dest='languages',
-        help='Process only specific language(s) (can be used multiple times)'
+        "--lang",
+        action="append",
+        dest="languages",
+        help="Process only specific language(s) (can be used multiple times)",
     )
 
     args = parser.parse_args()
 
     # Load configuration
-    with open(args.config, 'r') as f:
+    with open(args.config, "r") as f:
         config = yaml.safe_load(f)
 
     # Setup logging
-    setup_logging(config['logging'])
+    setup_logging(config["logging"])
 
     logger = logging.getLogger(__name__)
-    logger.info("="*60)
+    logger.info("=" * 60)
     logger.info("NC Commons Import Bot Starting")
-    logger.info("="*60)
+    logger.info("=" * 60)
     logger.info(f"Configuration loaded from: {args.config}")
 
     # Load credentials
@@ -188,13 +170,10 @@ def main():
     logger.info("Credentials loaded")
 
     # Initialize database
-    database = Database(config['database']['path'])
+    database = Database(config["database"]["path"])
 
     # Connect to NC Commons
-    nc_api = NCCommonsAPI(
-        credentials['nc_username'],
-        credentials['nc_password']
-    )
+    nc_api = NCCommonsAPI(credentials["nc_username"], credentials["nc_password"])
 
     # Determine which languages to process
     if args.languages:
@@ -203,38 +182,38 @@ def main():
         logger.info(f"Processing {len(languages)} specified languages: {languages}")
     else:
         # Get all languages from NC Commons page
-        language_page = config['nc_commons']['language_page']
+        language_page = config["nc_commons"]["language_page"]
         page_text = nc_api.get_page_text(language_page)
         languages = parse_language_list(page_text)
         logger.info(f"Processing {len(languages)} languages from {language_page}")
 
     # Process each language
     overall_stats = {
-        'languages_processed': 0,
-        'total_pages_processed': 0,
-        'total_pages_modified': 0,
-        'total_uploads': 0,
-        'total_errors': 0
+        "languages_processed": 0,
+        "total_pages_processed": 0,
+        "total_pages_modified": 0,
+        "total_uploads": 0,
+        "total_errors": 0,
     }
 
     for lang in languages:
         try:
             stats = process_language(lang, config, credentials, nc_api, database)
 
-            overall_stats['languages_processed'] += 1
-            overall_stats['total_pages_processed'] += stats['pages_processed']
-            overall_stats['total_pages_modified'] += stats['pages_modified']
-            overall_stats['total_uploads'] += stats['total_uploads']
-            overall_stats['total_errors'] += stats['errors']
+            overall_stats["languages_processed"] += 1
+            overall_stats["total_pages_processed"] += stats["pages_processed"]
+            overall_stats["total_pages_modified"] += stats["pages_modified"]
+            overall_stats["total_uploads"] += stats["total_uploads"]
+            overall_stats["total_errors"] += stats["errors"]
 
         except Exception as e:
             logger.error(f"Failed to process language {lang}: {e}")
-            overall_stats['total_errors'] += 1
+            overall_stats["total_errors"] += 1
 
     # Final summary
-    logger.info("="*60)
+    logger.info("=" * 60)
     logger.info("Bot Completed")
-    logger.info("="*60)
+    logger.info("=" * 60)
     logger.info(f"Languages processed: {overall_stats['languages_processed']}")
     logger.info(f"Pages processed: {overall_stats['total_pages_processed']}")
     logger.info(f"Pages modified: {overall_stats['total_pages_modified']}")
@@ -261,5 +240,5 @@ def safe_main():
         return 1
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     sys.exit(main())

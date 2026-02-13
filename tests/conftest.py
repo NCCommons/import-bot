@@ -21,7 +21,7 @@ def temp_db():
     Automatically cleaned up after test.
     """
     # Create temporary file
-    temp_file = tempfile.NamedTemporaryFile(delete=False, suffix='.db')
+    temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".db")
     db_path = Path(temp_file.name)
     temp_file.close()
 
@@ -38,27 +38,19 @@ def temp_db():
 def sample_config():
     """Sample configuration dictionary for tests."""
     return {
-        'nc_commons': {
-            'site': 'nccommons.org',
-            'language_page': 'User:Mr. Ibrahem/import bot'
+        "nc_commons": {"site": "nccommons.org", "language_page": "User:Mr. Ibrahem/import bot"},
+        "wikipedia": {
+            "upload_comment": "Bot: import from nccommons.org",
+            "category": "Category:Contains images from NC Commons",
         },
-        'wikipedia': {
-            'upload_comment': 'Bot: import from nccommons.org',
-            'category': 'Category:Contains images from NC Commons'
+        "database": {"path": "./test.db"},
+        "processing": {
+            "max_pages_per_language": 1000,
+            "max_retry_attempts": 3,
+            "retry_delay_seconds": 5,
+            "retry_backoff_multiplier": 2,
         },
-        'database': {
-            'path': './test.db'
-        },
-        'processing': {
-            'max_pages_per_language': 1000,
-            'max_retry_attempts': 3,
-            'retry_delay_seconds': 5,
-            'retry_backoff_multiplier': 2
-        },
-        'logging': {
-            'level': 'INFO',
-            'file': './test.log'
-        }
+        "logging": {"level": "INFO", "file": "./test.log"},
     }
 
 
@@ -79,10 +71,10 @@ def mock_nc_api():
 def mock_wiki_api():
     """Mock Wikipedia API client."""
     api = Mock(spec=WikipediaAPI)
-    api.lang = 'en'
+    api.lang = "en"
 
     # Mock methods
-    api.get_pages_with_template.return_value = ['Page 1', 'Page 2']
+    api.get_pages_with_template.return_value = ["Page 1", "Page 2"]
     api.get_page_text.return_value = "{{NC|test.jpg|caption}}"
     api.save_page.return_value = None
     api.upload_from_url.return_value = True

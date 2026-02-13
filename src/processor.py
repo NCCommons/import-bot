@@ -23,13 +23,7 @@ class PageProcessor:
     with standard Wikipedia file syntax.
     """
 
-    def __init__(
-        self,
-        wiki_api: WikipediaAPI,
-        uploader: FileUploader,
-        database: Database,
-        config: dict
-    ):
+    def __init__(self, wiki_api: WikipediaAPI, uploader: FileUploader, database: Database, config: dict):
         """
         Initialize page processor.
 
@@ -103,12 +97,7 @@ class PageProcessor:
                     # Continue with other files
 
             # Record page processing
-            self.db.record_page_processing(
-                page_title,
-                self.wiki_api.lang,
-                len(templates),
-                files_uploaded
-            )
+            self.db.record_page_processing(page_title, self.wiki_api.lang, len(templates), files_uploaded)
 
             # If any files were uploaded, update the page
             if replacements:

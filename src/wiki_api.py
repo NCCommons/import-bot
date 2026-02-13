@@ -13,6 +13,7 @@ from functools import wraps
 
 logger = logging.getLogger(__name__)
 
+
 # Retry decorator implementation
 def retry(max_attempts: int = 3, delay: int = 5, backoff: int = 2):
     """
@@ -26,6 +27,7 @@ def retry(max_attempts: int = 3, delay: int = 5, backoff: int = 2):
     Returns:
         Decorated function that retries on failure
     """
+
     def decorator(func):
         @wraps(func)
         def wrapper(*args, **kwargs):
@@ -49,6 +51,7 @@ def retry(max_attempts: int = 3, delay: int = 5, backoff: int = 2):
                     current_delay *= backoff
 
         return wrapper
+
     return decorator
 
 
@@ -121,7 +124,7 @@ class NCCommonsAPI(WikiAPI):
             username: NC Commons username
             password: NC Commons password
         """
-        super().__init__('nccommons.org', username, password)
+        super().__init__("nccommons.org", username, password)
 
     @retry(max_attempts=3, delay=5, backoff=2)
     def get_image_url(self, filename: str) -> str:
@@ -134,12 +137,12 @@ class NCCommonsAPI(WikiAPI):
         Returns:
             Direct URL to the image file
         """
-        if not filename.startswith('File:'):
-            filename = f'File:{filename}'
+        if not filename.startswith("File:"):
+            filename = f"File:{filename}"
 
         logger.debug(f"Getting image URL for: {filename}")
         page = self.site.pages[filename]
-        return page.imageinfo['url']
+        return page.imageinfo["url"]
 
     def get_file_description(self, filename: str) -> str:
         """
@@ -151,8 +154,8 @@ class NCCommonsAPI(WikiAPI):
         Returns:
             File description page wikitext
         """
-        if not filename.startswith('File:'):
-            filename = f'File:{filename}'
+        if not filename.startswith("File:"):
+            filename = f"File:{filename}"
 
         return self.get_page_text(filename)
 
@@ -174,7 +177,7 @@ class WikipediaAPI(WikiAPI):
             password: Wikipedia password (bot password token)
         """
         self.lang = language_code
-        site = f'{language_code}.wikipedia.org'
+        site = f"{language_code}.wikipedia.org"
         super().__init__(site, username, password)
 
     @retry(max_attempts=3, delay=5, backoff=2)
@@ -189,8 +192,8 @@ class WikipediaAPI(WikiAPI):
         Returns:
             List of page titles
         """
-        if not template.startswith('Template:'):
-            template = f'Template:{template}'
+        if not template.startswith("Template:"):
+            template = f"Template:{template}"
 
         logger.info(f"Finding pages with template: {template}")
 
@@ -220,13 +223,7 @@ class WikipediaAPI(WikiAPI):
         try:
             logger.info(f"Uploading from URL: {filename}")
 
-            result = self.site.upload(
-                file=None,
-                filename=filename,
-                description=description,
-                comment=comment,
-                url=url
-            )
+            result = self.site.upload(file=None, filename=filename, description=description, comment=comment, url=url)
 
             logger.info(f"Upload successful: {filename}")
             return True
@@ -234,7 +231,7 @@ class WikipediaAPI(WikiAPI):
         except mwclient.errors.APIError as e:
             error_msg = str(e).lower()
 
-            if 'duplicate' in error_msg:
+            if "duplicate" in error_msg:
                 logger.warning(f"File is duplicate: {filename}")
                 return False
 
@@ -261,13 +258,8 @@ class WikipediaAPI(WikiAPI):
         try:
             logger.info(f"Uploading from file: {filename}")
 
-            with open(filepath, 'rb') as f:
-                result = self.site.upload(
-                    file=f,
-                    filename=filename,
-                    description=description,
-                    comment=comment
-                )
+            with open(filepath, "rb") as f:
+                result = self.site.upload(file=f, filename=filename, description=description, comment=comment)
 
             logger.info(f"Upload successful: {filename}")
             return True
@@ -275,7 +267,7 @@ class WikipediaAPI(WikiAPI):
         except mwclient.errors.APIError as e:
             error_msg = str(e).lower()
 
-            if 'duplicate' in error_msg:
+            if "duplicate" in error_msg:
                 logger.warning(f"File is duplicate: {filename}")
                 return False
 

@@ -44,7 +44,8 @@ class Reporter:
             total_stats = self.db.get_statistics()
 
             # Per-language statistics
-            by_language = conn.execute("""
+            by_language = conn.execute(
+                """
                 SELECT
                     language,
                     COUNT(*) as upload_count
@@ -52,10 +53,12 @@ class Reporter:
                 WHERE status = 'success'
                 GROUP BY language
                 ORDER BY upload_count DESC
-            """).fetchall()
+            """
+            ).fetchall()
 
             # Recent errors
-            recent_errors = conn.execute("""
+            recent_errors = conn.execute(
+                """
                 SELECT
                     filename,
                     language,
@@ -65,18 +68,19 @@ class Reporter:
                 WHERE status = 'failed'
                 ORDER BY uploaded_at DESC
                 LIMIT 10
-            """).fetchall()
+            """
+            ).fetchall()
 
             # Build report
             report = {
-                'total': dict(total_stats),
-                'by_language': [dict(row) for row in by_language],
-                'recent_errors': [dict(row) for row in recent_errors]
+                "total": dict(total_stats),
+                "by_language": [dict(row) for row in by_language],
+                "recent_errors": [dict(row) for row in recent_errors],
             }
 
             return report
 
-    def save_report(self, output_path: str = './reports/summary.json'):
+    def save_report(self, output_path: str = "./reports/summary.json"):
         """
         Generate and save summary report to JSON file.
 
@@ -91,19 +95,19 @@ class Reporter:
         output_file.parent.mkdir(parents=True, exist_ok=True)
 
         # Write to file
-        with open(output_file, 'w', encoding='utf-8') as f:
+        with open(output_file, "w", encoding="utf-8") as f:
             json.dump(report, f, indent=2, ensure_ascii=False)
 
         logger.info(f"Report saved to {output_path}")
 
 
 # Standalone script functionality
-if __name__ == '__main__':
+if __name__ == "__main__":
     # Allow running as standalone script
     import sys
 
-    db_path = sys.argv[1] if len(sys.argv) > 1 else './data/nc_files.db'
-    output = sys.argv[2] if len(sys.argv) > 2 else './reports/summary.json'
+    db_path = sys.argv[1] if len(sys.argv) > 1 else "./data/nc_files.db"
+    output = sys.argv[2] if len(sys.argv) > 2 else "./reports/summary.json"
 
     db = Database(db_path)
     reporter = Reporter(db)

@@ -25,13 +25,7 @@ class FileUploader:
     processing descriptions, uploading to Wikipedia, and recording results.
     """
 
-    def __init__(
-        self,
-        nc_api: NCCommonsAPI,
-        wiki_api: WikipediaAPI,
-        database: Database,
-        config: dict
-    ):
+    def __init__(self, nc_api: NCCommonsAPI, wiki_api: WikipediaAPI, database: Database, config: dict):
         """
         Initialize file uploader.
 
@@ -81,31 +75,28 @@ class FileUploader:
             description = self._process_description(description)
 
             # Upload comment from config
-            comment = self.config['wikipedia']['upload_comment']
+            comment = self.config["wikipedia"]["upload_comment"]
 
             # Try URL upload first (faster, doesn't require download)
             try:
                 success = self.wiki_api.upload_from_url(
-                    filename=filename,
-                    url=file_url,
-                    description=description,
-                    comment=comment
+                    filename=filename, url=file_url, description=description, comment=comment
                 )
 
                 if success:
-                    self.db.record_upload(filename, lang, 'success')
+                    self.db.record_upload(filename, lang, "success")
                     logger.info(f"Upload successful (URL method): {filename}")
                     return True
                 else:
                     # Duplicate file
-                    self.db.record_upload(filename, lang, 'duplicate')
+                    self.db.record_upload(filename, lang, "duplicate")
                     return False
 
             except Exception as url_error:
                 # URL upload not allowed or failed, try file upload
                 error_msg = str(url_error).lower()
 
-                if 'url' in error_msg or 'copyupload' in error_msg:
+                if "url" in error_msg or "copyupload" in error_msg:
                     logger.info(f"URL upload not allowed, trying file upload: {filename}")
                     return self._upload_via_download(filename, file_url, description, comment, lang)
                 else:
@@ -114,17 +105,10 @@ class FileUploader:
 
         except Exception as e:
             logger.error(f"Upload failed for {filename}: {e}")
-            self.db.record_upload(filename, lang, 'failed', str(e))
+            self.db.record_upload(filename, lang, "failed", str(e))
             return False
 
-    def _upload_via_download(
-        self,
-        filename: str,
-        url: str,
-        description: str,
-        comment: str,
-        language: str
-    ) -> bool:
+    def _upload_via_download(self, filename: str, url: str, description: str, comment: str, language: str) -> bool:
         """
         Download file from URL then upload to Wikipedia.
 
@@ -145,7 +129,7 @@ class FileUploader:
         try:
             # Download to temporary file
             logger.info(f"Downloading file: {filename}")
-            temp_file = tempfile.NamedTemporaryFile(delete=False, suffix='.tmp')
+            temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".tmp")
             temp_path = temp_file.name
             temp_file.close()
 
@@ -154,19 +138,16 @@ class FileUploader:
 
             # Upload from file
             success = self.wiki_api.upload_from_file(
-                filename=filename,
-                filepath=temp_path,
-                description=description,
-                comment=comment
+                filename=filename, filepath=temp_path, description=description, comment=comment
             )
 
             if success:
-                self.db.record_upload(filename, language, 'success')
+                self.db.record_upload(filename, language, "success")
                 logger.info(f"Upload successful (file method): {filename}")
                 return True
             else:
                 # Duplicate
-                self.db.record_upload(filename, language, 'duplicate')
+                self.db.record_upload(filename, language, "duplicate")
                 return False
 
         finally:
@@ -191,7 +172,7 @@ class FileUploader:
         processed = remove_categories(description)
 
         # Add NC Commons category
-        category = self.config['wikipedia']['category']
+        category = self.config["wikipedia"]["category"]
         processed += f"\n[[{category}]]"
 
         return processed.strip()

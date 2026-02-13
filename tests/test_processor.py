@@ -19,18 +19,12 @@ class TestPageProcessor:
 
         return PageProcessor(mock_wiki_api, mock_uploader, temp_db, sample_config)
 
-    def test_process_page_with_templates(
-        self,
-        processor,
-        mock_wiki_api,
-        sample_nc_template_page,
-        temp_db
-    ):
+    def test_process_page_with_templates(self, processor, mock_wiki_api, sample_nc_template_page, temp_db):
         """Test processing page with NC templates."""
         # Set up mock to return page with templates
         mock_wiki_api.get_page_text.return_value = sample_nc_template_page
 
-        result = processor.process_page('Test Page')
+        result = processor.process_page("Test Page")
 
         # Should succeed
         assert result is True
@@ -40,19 +34,17 @@ class TestPageProcessor:
 
         # Check database record
         with temp_db._get_connection() as conn:
-            record = conn.execute(
-                "SELECT * FROM pages WHERE page_title='Test Page'"
-            ).fetchone()
+            record = conn.execute("SELECT * FROM pages WHERE page_title='Test Page'").fetchone()
 
             assert record is not None
-            assert record['templates_found'] == 2
-            assert record['files_uploaded'] == 2
+            assert record["templates_found"] == 2
+            assert record["files_uploaded"] == 2
 
     def test_process_page_no_templates(self, processor, mock_wiki_api, temp_db):
         """Test processing page without NC templates."""
         mock_wiki_api.get_page_text.return_value = "Plain text page"
 
-        result = processor.process_page('Plain Page')
+        result = processor.process_page("Plain Page")
 
         # Should return False (no modifications)
         assert result is False
@@ -62,12 +54,10 @@ class TestPageProcessor:
 
         # Should still record in database
         with temp_db._get_connection() as conn:
-            record = conn.execute(
-                "SELECT * FROM pages WHERE page_title='Plain Page'"
-            ).fetchone()
+            record = conn.execute("SELECT * FROM pages WHERE page_title='Plain Page'").fetchone()
 
-            assert record['templates_found'] == 0
-            assert record['files_uploaded'] == 0
+            assert record["templates_found"] == 0
+            assert record["files_uploaded"] == 0
 
     def test_process_page_upload_fails(self, processor, mock_wiki_api, temp_db):
         """Test processing when file uploads fail."""
@@ -76,7 +66,7 @@ class TestPageProcessor:
         # Make uploader fail
         processor.uploader.upload_file.return_value = False
 
-        result = processor.process_page('Test Page')
+        result = processor.process_page("Test Page")
 
         # Should return False (no files uploaded)
         assert result is False
@@ -89,14 +79,14 @@ class TestPageProcessor:
         page_text = "{{NC|test.jpg|caption}}"
         mock_wiki_api.get_page_text.return_value = page_text
 
-        processor.process_page('Test Page')
+        processor.process_page("Test Page")
 
         # Get the saved text
         call_args = mock_wiki_api.save_page.call_args
         saved_text = call_args[0][1]
 
         # Should contain category
-        assert '[[Category:Contains images from NC Commons]]' in saved_text
+        assert "[[Category:Contains images from NC Commons]]" in saved_text
 
     def test_process_page_doesnt_duplicate_category(self, processor, mock_wiki_api):
         """Test that category isn't added if already present."""
@@ -106,27 +96,27 @@ class TestPageProcessor:
         """
         mock_wiki_api.get_page_text.return_value = page_text
 
-        processor.process_page('Test Page')
+        processor.process_page("Test Page")
 
         call_args = mock_wiki_api.save_page.call_args
         saved_text = call_args[0][1]
 
         # Should only have one category
-        assert saved_text.count('[[Category:Contains images from NC Commons]]') == 1
+        assert saved_text.count("[[Category:Contains images from NC Commons]]") == 1
 
     def test_process_page_replaces_templates(self, processor, mock_wiki_api):
         """Test that NC templates are replaced with file syntax."""
         page_text = "Text before {{NC|test.jpg|My caption}} text after"
         mock_wiki_api.get_page_text.return_value = page_text
 
-        processor.process_page('Test Page')
+        processor.process_page("Test Page")
 
         call_args = mock_wiki_api.save_page.call_args
         saved_text = call_args[0][1]
 
         # Should replace template
-        assert '{{NC|test.jpg|My caption}}' not in saved_text
-        assert '[[File:test.jpg|thumb|My caption]]' in saved_text
+        assert "{{NC|test.jpg|My caption}}" not in saved_text
+        assert "[[File:test.jpg|thumb|My caption]]" in saved_text
 
     def test_process_page_continues_on_error(self, processor, mock_wiki_api, temp_db):
         """Test that processing continues when individual files fail."""
@@ -139,37 +129,35 @@ class TestPageProcessor:
 
         # Make one upload fail
         def upload_side_effect(filename):
-            if filename == 'fail.jpg':
+            if filename == "fail.jpg":
                 raise Exception("Upload error")
             return True
 
         processor.uploader.upload_file.side_effect = upload_side_effect
 
-        result = processor.process_page('Test Page')
+        result = processor.process_page("Test Page")
 
         # Should still succeed (2 out of 3 uploaded)
         assert result is True
 
         # Database should show 2 uploaded
         with temp_db._get_connection() as conn:
-            record = conn.execute(
-                "SELECT * FROM pages WHERE page_title='Test Page'"
-            ).fetchone()
+            record = conn.execute("SELECT * FROM pages WHERE page_title='Test Page'").fetchone()
 
-            assert record['templates_found'] == 3
-            assert record['files_uploaded'] == 2
+            assert record["templates_found"] == 3
+            assert record["files_uploaded"] == 2
 
     def test_apply_replacements(self, processor):
         """Test template replacement logic."""
         text = "Before {{NC|file1.jpg}} middle {{NC|file2.jpg}} after"
         replacements = {
-            '{{NC|file1.jpg}}': '[[File:file1.jpg|thumb|]]',
-            '{{NC|file2.jpg}}': '[[File:file2.jpg|thumb|]]'
+            "{{NC|file1.jpg}}": "[[File:file1.jpg|thumb|]]",
+            "{{NC|file2.jpg}}": "[[File:file2.jpg|thumb|]]",
         }
 
         result = processor._apply_replacements(text, replacements)
 
-        assert '{{NC|file1.jpg}}' not in result
-        assert '{{NC|file2.jpg}}' not in result
-        assert '[[File:file1.jpg|thumb|]]' in result
-        assert '[[File:file2.jpg|thumb|]]' in result
+        assert "{{NC|file1.jpg}}" not in result
+        assert "{{NC|file2.jpg}}" not in result
+        assert "[[File:file1.jpg|thumb|]]" in result
+        assert "[[File:file2.jpg|thumb|]]" in result

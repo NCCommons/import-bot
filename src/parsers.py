@@ -23,6 +23,7 @@ class NCTemplate:
         filename: Image filename
         caption: Image caption (optional)
     """
+
     original_text: str
     filename: str
     caption: str = ""
@@ -58,11 +59,11 @@ def parse_language_list(page_text: str) -> List[str]:
 
     for template in parsed.templates:
         # Normalize template name for comparison
-        template_name = str(template.normal_name()).strip().lower().replace('_', ' ')
+        template_name = str(template.normal_name()).strip().lower().replace("_", " ")
 
         if template_name_pattern in template_name:
             # Extract first positional argument (language code)
-            arg = template.get_arg('1')
+            arg = template.get_arg("1")
             if arg and arg.value:
                 lang_code = arg.value.strip()
                 languages.append(lang_code)
@@ -93,26 +94,22 @@ def extract_nc_templates(page_text: str) -> List[NCTemplate]:
         # Check if this is an NC template
         template_name = str(template.normal_name()).strip().lower()
 
-        if template_name == 'nc':
+        if template_name == "nc":
             # Extract filename (first argument)
             filename = ""
-            arg1 = template.get_arg('1')
+            arg1 = template.get_arg("1")
             if arg1 and arg1.value:
                 filename = arg1.value.strip()
 
             # Extract caption (second argument, optional)
             caption = ""
-            arg2 = template.get_arg('2')
+            arg2 = template.get_arg("2")
             if arg2 and arg2.value:
                 caption = arg2.value.strip()
 
             # Only add if filename exists
             if filename:
-                nc_template = NCTemplate(
-                    original_text=template.string,
-                    filename=filename,
-                    caption=caption
-                )
+                nc_template = NCTemplate(original_text=template.string, filename=filename, caption=caption)
                 templates.append(nc_template)
                 logger.debug(f"Found NC template: {filename}")
 
@@ -131,5 +128,5 @@ def remove_categories(text: str) -> str:
         Text with all [[Category:...]] tags removed
     """
     # Remove category tags (case-insensitive)
-    cleaned = re.sub(r'\[\[Category:.*?\]\]', '', text, flags=re.IGNORECASE | re.DOTALL)
+    cleaned = re.sub(r"\[\[Category:.*?\]\]", "", text, flags=re.IGNORECASE | re.DOTALL)
     return cleaned.strip()
