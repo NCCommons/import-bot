@@ -72,12 +72,9 @@ def setup_logging(config: dict):
     logging.info("Logging configured")
 
 
-def load_credentials(env_file: str = '.env') -> dict:
+def load_credentials() -> dict:
     """
     Load credentials from environment variables or .env file.
-
-    Args:
-        env_file: Path to .env file (default: .env)
 
     Returns:
         Dictionary with NC Commons and Wikipedia credentials
@@ -87,6 +84,7 @@ def load_credentials(env_file: str = '.env') -> dict:
         KeyError: If required environment variables are missing
     """
     # Load from .env file if it exists
+    env_file = '.env'
     if Path(env_file).exists():
         load_dotenv(env_file)
     else:
@@ -215,12 +213,6 @@ Examples:
         help='Process only specific language(s) (can be used multiple times)'
     )
 
-    parser.add_argument(
-        '--env',
-        default='.env',
-        help='Path to environment file (default: .env)'
-    )
-
     args = parser.parse_args()
 
     try:
@@ -238,7 +230,7 @@ Examples:
         logger.info(f"Configuration loaded from: {args.config}")
 
         # Load credentials
-        credentials = load_credentials(args.env)
+        credentials = load_credentials()
         logger.info("Credentials loaded")
 
         # Initialize database
