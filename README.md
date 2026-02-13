@@ -1,0 +1,203 @@
+
+# NC Commons Import Bot
+
+A Python bot that automatically imports files from [NC Commons](https://nccommons.org) to Wikipedia across multiple languages.
+
+## Features
+
+-   🌍 Multi-language support (processes multiple Wikipedias)
+-   📁 Automatic file uploads from NC Commons
+-   🔄 Template replacement ({{NC}} → [[File:...]])
+-   💾 SQLite database for tracking
+-   🔁 Automatic retry with exponential backoff
+-   📊 Statistics and reporting
+-   🪵 Comprehensive logging
+
+## How It Works
+
+1. Reads a list of languages from NC Commons
+2. For each language:
+    - Finds Wikipedia pages with `{{NC|filename.jpg}}` templates
+    - Downloads file info from NC Commons
+    - Uploads files to Wikipedia
+    - Replaces templates with `[[File:filename.jpg|thumb|caption]]`
+    - Adds "Files imported from NC Commons" category
+3. Records everything in SQLite database
+
+## Installation
+
+### Requirements
+
+-   Python 3.8 or higher
+-   pip
+
+### Setup
+
+1. **Clone or download this repository**
+
+2. **Install dependencies:**
+
+    ```bash
+    pip install -r requirements.txt
+    ```
+
+3. **Configure credentials:**
+
+    ```bash
+    cp credentials.ini.example credentials.ini
+    ```
+
+    Edit `credentials.ini` and add your credentials:
+
+    - NC Commons: Your username and password
+    - Wikipedia: Your bot username and bot password token
+
+4. **Configure settings (optional):**
+
+    Edit `config.yaml` to customize:
+
+    - Processing limits
+    - Retry behavior
+    - Logging levels
+    - Database path
+
+## Usage
+
+### Process All Languages
+
+```bash
+python bot.py
+```
+
+### Process Specific Language(s)
+
+```bash
+python bot.py --lang ar
+python bot.py --lang en --lang fr
+```
+
+### Use Custom Config
+
+```bash
+python bot.py --config my_config.yaml
+```
+
+### Generate Reports
+
+```bash
+python -m src.reports ./data/nc_files.db ./reports/summary.json
+```
+
+## Project Structure
+
+```
+nc_commons_bot/
+├── bot.py                  # Main entry point
+├── config.yaml             # Configuration
+├── credentials.ini         # Credentials (gitignored)
+├── requirements.txt        # Python dependencies
+└── src/                    # Source code
+    ├── wiki_api.py         # MediaWiki API wrapper
+    ├── parsers.py          # Wikitext parsing
+    ├── uploader.py         # File upload logic
+    ├── processor.py        # Page processing
+    ├── database.py         # SQLite operations
+    └── reports.py          # Reporting
+```
+
+## Configuration
+
+### config.yaml
+
+Main configuration file:
+
+-   `nc_commons`: NC Commons site settings
+-   `wikipedia`: Wikipedia upload settings
+-   `database`: Database path
+-   `processing`: Limits and retry configuration
+-   `logging`: Log file and level
+
+### credentials.ini
+
+Credentials file (never commit to git):
+
+-   `nccommons`: NC Commons login
+-   `wikipedia`: Wikipedia bot password
+
+## Database
+
+The bot uses SQLite to track:
+
+-   **uploads**: Every file upload attempt (success/failed/duplicate)
+-   **pages**: Every page processed
+
+Database location: `./data/nc_files.db` (configurable)
+
+## Logging
+
+Logs are written to both console and file:
+
+-   Default location: `./logs/bot.log`
+-   Rotating logs (10MB max, 5 backups)
+-   Configurable log level
+
+## Troubleshooting
+
+### "Credentials file not found"
+
+Make sure you copied `credentials.ini.example` to `credentials.ini` and filled in your credentials.
+
+### "Login failed"
+
+-   For Wikipedia: Use bot password format (`BotName@BotPassword`, not your main password)
+-   Check that credentials are correct
+-   Ensure bot has appropriate permissions
+
+### "Upload failed: copyupload"
+
+This means URL upload is disabled. The bot will automatically retry with file download method.
+
+## Development
+
+### Code Style
+
+-   All code uses English for comments, docstrings, and variable names
+-   Type hints for all functions
+-   Comprehensive docstrings
+-   PEP 8 compliant
+
+### Testing
+
+Run manual tests:
+
+```bash
+# Test configuration
+python -c "import yaml; print(yaml.safe_load(open('config.yaml')))"
+
+# Test API connection
+python -c "from src.wiki_api import NCCommonsAPI; api = NCCommonsAPI('user', 'pass'); print('OK')"
+
+# Test database
+python -c "from src.database import Database; db = Database('./test.db'); print('OK')"
+```
+
+## License
+
+[Your license here]
+
+## Credits
+
+Created for the NC Commons to Wikipedia import workflow.
+
+Uses:
+
+-   [mwclient](https://github.com/mwclient/mwclient) - MediaWiki API client
+-   [wikitextparser](https://github.com/5j9/wikitextparser) - Wikitext parsing
+-   [PyYAML](https://pyyaml.org/) - YAML configuration
+
+## Support
+
+For issues or questions:
+
+-   Open an issue on GitHub
+-   Contact: [Your contact]
