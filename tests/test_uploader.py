@@ -2,8 +2,9 @@
 Tests for file uploader.
 """
 
-import pytest
 from unittest.mock import Mock, patch
+
+import pytest
 from src.uploader import FileUploader
 
 

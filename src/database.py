@@ -5,12 +5,12 @@ This module handles all database interactions including recording uploads,
 page processing, and generating statistics.
 """
 
-import sqlite3
 import logging
+import sqlite3
+from contextlib import contextmanager
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, Optional
-from contextlib import contextmanager
 
 logger = logging.getLogger(__name__)
 

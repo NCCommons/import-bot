@@ -5,8 +5,8 @@ Provides colored console output and rotating file logging.
 """
 
 import logging
-from pathlib import Path
 from logging.handlers import RotatingFileHandler
+from pathlib import Path
 
 import colorlog
 

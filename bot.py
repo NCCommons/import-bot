@@ -11,20 +11,20 @@ Usage:
     python bot.py --config custom.yaml  # Use custom config file
 """
 
-import sys
-import logging
-import yaml
 import argparse
+import logging
 import os
+import sys
 from pathlib import Path
-from dotenv import load_dotenv
 
-from src.wiki_api import NCCommonsAPI, WikipediaAPI
+import yaml
+from dotenv import load_dotenv
 from src.database import Database
-from src.uploader import FileUploader
-from src.processor import PageProcessor
-from src.parsers import parse_language_list
 from src.logging_config import setup_logging
+from src.parsers import parse_language_list
+from src.processor import PageProcessor
+from src.uploader import FileUploader
+from src.wiki_api import NCCommonsAPI, WikipediaAPI
 
 
 def load_credentials() -> dict:

@@ -4,11 +4,12 @@ Wikitext parsing utilities using wikitextparser.
 This module provides functions to parse and manipulate wikitext content.
 """
 
-import wikitextparser as wtp
-import re
 import logging
-from typing import List
+import re
 from dataclasses import dataclass
+from typing import List
+
+import wikitextparser as wtp
 
 logger = logging.getLogger(__name__)
 

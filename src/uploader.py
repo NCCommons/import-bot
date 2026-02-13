@@ -10,9 +10,9 @@ import tempfile
 import urllib.request
 from pathlib import Path
 
-from src.wiki_api import NCCommonsAPI, WikipediaAPI
 from src.database import Database
 from src.parsers import remove_categories
+from src.wiki_api import NCCommonsAPI, WikipediaAPI
 
 logger = logging.getLogger(__name__)
 

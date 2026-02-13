@@ -3,7 +3,7 @@ Tests for wikitext parsing functions.
 """
 
 import pytest
-from src.parsers import parse_language_list, extract_nc_templates, remove_categories, NCTemplate
+from src.parsers import NCTemplate, extract_nc_templates, parse_language_list, remove_categories
 
 
 class TestParseLanguageList:

@@ -5,11 +5,12 @@ This module provides classes for interacting with NC Commons and Wikipedia
 through the MediaWiki API.
 """
 
-import mwclient
 import logging
 import time
-from typing import List, Dict, Optional
 from functools import wraps
+from typing import Dict, List, Optional
+
+import mwclient
 
 logger = logging.getLogger(__name__)
 

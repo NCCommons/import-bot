@@ -4,11 +4,11 @@ Pytest fixtures for NC Commons bot tests.
 Provides shared fixtures for mocking and test data.
 """
 
-import pytest
 import tempfile
 from pathlib import Path
 from unittest.mock import Mock
 
+import pytest
 from src.database import Database
 from src.wiki_api import NCCommonsAPI, WikipediaAPI
 
