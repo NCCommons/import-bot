@@ -22,20 +22,16 @@ nc_commons_bot/
 ├── README.md
 ├── bot.py                   # Main entry point (was: bot.py)
 └── src/                     # All logic in src/
-    ├── __init__.py
-    ├── wiki_api.py          # mwclient wrapper (replaces: wiki_page.py, page_ncc.py)
-    ├── parsers.py           # wikitextparser helpers (replaces: get_langs.py + part of wrk_pages.py)
-    ├── uploader.py          # File upload logic (replaces: upload_file.py, import_files.py)
-    ├── processor.py         # Page processing (replaces: wrk_pages.py)
-    ├── database.py          # SQLite operations (replaces: db.py, db_bot.py)
-    └── reports.py           # Simple reporting (new)
-├── tests/
 │   ├── __init__.py
-│   ├── conftest.py
-│   ├── test_wiki_api/
-│   ├── test_parsers/
-│   ├── test_processors/
-│   └── test_database/
+│   ├── wiki_api.py          # mwclient wrapper (replaces: wiki_page.py, page_ncc.py)
+│   ├── parsers.py           # wikitextparser helpers (replaces: get_langs.py + part of wrk_pages.py)
+│   ├── uploader.py          # File upload logic (replaces: upload_file.py, import_files.py)
+│   ├── processor.py         # Page processing (replaces: wrk_pages.py)
+│   ├── database.py          # SQLite operations (replaces: db.py, db_bot.py)
+│   └── reports.py           # Simple reporting (new)
+└── tests/
+    ├── __init__.py
+    └── conftest.py
 ```
 
 **Total: 8 files instead of 12!**
