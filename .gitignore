@@ -1,1 +1,29 @@
+# Credentials - NEVER commit!
+credentials.ini
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+*.egg-info/
+
+# Data and logs
+data/
+logs/
+*.db
+*.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
 nc_import.zip

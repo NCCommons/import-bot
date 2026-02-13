@@ -1,0 +1,27 @@
+# NC Commons configuration
+nc_commons:
+    site: "nccommons.org"
+    language_page: "User:Mr. Ibrahem/import bot"
+
+# Wikipedia configuration
+wikipedia:
+    upload_comment: "Bot: import from nccommons.org"
+    category: "Category:Contains images from NC Commons"
+
+# Database configuration
+database:
+    path: "./data/nc_files.db"
+
+# Processing limits and retry logic
+processing:
+    max_pages_per_language: 10000
+    max_retry_attempts: 3
+    retry_delay_seconds: 5
+    retry_backoff_multiplier: 2
+
+# Logging configuration
+logging:
+    level: "INFO" # DEBUG, INFO, WARNING, ERROR
+    file: "./logs/bot.log"
+    max_bytes: 10485760 # 10MB
+    backup_count: 5
