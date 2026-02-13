@@ -56,7 +56,7 @@ database:
 
 # Processing limits
 processing:
-    max_pages: 10000
+    max_pages: 5000
     max_retries: 3
     retry_delay: 5
 
@@ -165,7 +165,7 @@ class WikipediaAPI(WikiAPI):
         site = f'{lang}.wikipedia.org'
         super().__init__(site, username, password)
 
-    def get_pages_with_template(self, template: str, limit: int = 10000) -> List[str]:
+    def get_pages_with_template(self, template: str, limit: int = 5000) -> List[str]:
         """Get all pages transcluding a template"""
         logger.info(f"Finding pages with {template}")
 

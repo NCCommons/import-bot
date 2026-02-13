@@ -178,7 +178,7 @@ class WikipediaAPI(WikiAPI):
         super().__init__(site, username, password)
 
     @retry(max_attempts=3, delay=5, backoff=2)
-    def get_pages_with_template(self, template: str, limit: int = 10000) -> List[str]:
+    def get_pages_with_template(self, template: str, limit: int = 5000) -> List[str]:
         """
         Get all pages that transclude a template.
 

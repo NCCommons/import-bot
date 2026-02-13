@@ -85,7 +85,7 @@ database:
 
 # Processing limits and retry logic
 processing:
-    max_pages_per_language: 10000
+    max_pages_per_language: 5000
     max_retry_attempts: 3
     retry_delay_seconds: 5
     retry_backoff_multiplier: 2
@@ -379,7 +379,7 @@ class WikipediaAPI(WikiAPI):
         super().__init__(site, username, password)
 
     @retry(max_attempts=3, delay=5, backoff=2)
-    def get_pages_with_template(self, template: str, limit: int = 10000) -> List[str]:
+    def get_pages_with_template(self, template: str, limit: int = 5000) -> List[str]:
         """
         Get all pages that transclude a template.
 
