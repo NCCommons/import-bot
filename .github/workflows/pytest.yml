@@ -1,17 +1,31 @@
 name: Tests
 
+# Run on pull requests and pushes to main
 on:
   pull_request:
   push:
-    branches: [main]
+    branches:
+      - main
 
 jobs:
   test:
+    name: Run pytest
     runs-on: ubuntu-latest
+
     steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-python@v4
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v4
       with:
         python-version: '3.11'
-    - run: pip install -r requirements.txt && pip install -r dev-requirements.txt
-    - run: pytest --cov=src -v
+
+    - name: Install dependencies
+      run: |
+        pip install -r requirements.txt
+        pip install -r dev-requirements.txt
+
+    - name: Run tests
+      run: |
+        pytest --cov=src --cov-report=term -v
