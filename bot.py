@@ -13,6 +13,7 @@ Usage:
 
 import sys
 import logging
+import colorlog
 import yaml
 import argparse
 import os
@@ -45,9 +46,21 @@ def setup_logging(config: dict):
     # Create logs directory
     log_file.parent.mkdir(parents=True, exist_ok=True)
 
-    # Create formatters
-    formatter = logging.Formatter(
+    # File formatter (plain text for log files)
+    file_formatter = logging.Formatter(
         '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    )
+
+    # Console formatter with colors
+    console_formatter = colorlog.ColoredFormatter(
+        '%(log_color)s%(asctime)s - %(name)s - %(levelname)s - %(message)s%(reset)s',
+        log_colors={
+            'DEBUG': 'cyan',
+            'INFO': 'green',
+            'WARNING': 'yellow',
+            'ERROR': 'red',
+            'CRITICAL': 'red,bg_white',
+        }
     )
 
     # File handler with rotation
@@ -57,11 +70,11 @@ def setup_logging(config: dict):
         maxBytes=max_bytes,
         backupCount=backup_count
     )
-    file_handler.setFormatter(formatter)
+    file_handler.setFormatter(file_formatter)
 
-    # Console handler
+    # Console handler with colors
     console_handler = logging.StreamHandler()
-    console_handler.setFormatter(formatter)
+    console_handler.setFormatter(console_formatter)
 
     # Configure root logger
     root_logger = logging.getLogger()

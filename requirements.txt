@@ -2,3 +2,4 @@ mwclient>=0.10.1
 wikitextparser>=0.55.0
 PyYAML>=6.0
 python-dotenv>=1.0.0
+colorlog>=6.7.0
