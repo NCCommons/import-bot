@@ -26,14 +26,9 @@ tests/
 
 ## Installation
 
-Add to `requirements.txt`:
+Add to `dev-requirements.txt`:
 
 ```txt
-# Existing dependencies
-mwclient>=0.10.1
-wikitextparser>=0.55.0
-PyYAML>=6.0
-
 # Testing dependencies
 pytest>=7.4.0
 pytest-cov>=4.1.0
