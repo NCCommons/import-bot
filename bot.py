@@ -15,8 +15,9 @@ import sys
 import logging
 import yaml
 import argparse
-import configparser
+import os
 from pathlib import Path
+from dotenv import load_dotenv
 
 from src.wiki_api import NCCommonsAPI, WikipediaAPI
 from src.database import Database
@@ -71,34 +72,42 @@ def setup_logging(config: dict):
     logging.info("Logging configured")
 
 
-def load_credentials(creds_file: str = 'credentials.ini') -> dict:
+def load_credentials(env_file: str = '.env') -> dict:
     """
-    Load credentials from INI file.
+    Load credentials from environment variables or .env file.
 
     Args:
-        creds_file: Path to credentials file
+        env_file: Path to .env file (default: .env)
 
     Returns:
         Dictionary with NC Commons and Wikipedia credentials
 
     Raises:
-        FileNotFoundError: If credentials file doesn't exist
+        FileNotFoundError: If .env file doesn't exist
+        KeyError: If required environment variables are missing
     """
-    if not Path(creds_file).exists():
+    # Load from .env file if it exists
+    if Path(env_file).exists():
+        load_dotenv(env_file)
+    else:
         raise FileNotFoundError(
-            f"Credentials file not found: {creds_file}\n"
-            f"Please copy credentials.ini.example to credentials.ini and fill in your credentials"
+            f"Environment file not found: {env_file}\n"
+            f"Please copy .env.example to .env and fill in your credentials"
         )
 
-    config = configparser.ConfigParser()
-    config.read(creds_file)
-
-    return {
-        'nc_username': config['nccommons']['username'],
-        'nc_password': config['nccommons']['password'],
-        'wiki_username': config['wikipedia']['username'],
-        'wiki_password': config['wikipedia']['password']
-    }
+    # Get credentials from environment variables
+    try:
+        return {
+            'nc_username': os.environ['NCCOMMONS_USERNAME'],
+            'nc_password': os.environ['NCCOMMONS_PASSWORD'],
+            'wiki_username': os.environ['WIKIPEDIA_USERNAME'],
+            'wiki_password': os.environ['WIKIPEDIA_PASSWORD']
+        }
+    except KeyError as e:
+        raise KeyError(
+            f"Missing environment variable: {e}\n"
+            f"Please ensure all required variables are set in {env_file}"
+        )
 
 
 def process_language(
@@ -207,9 +216,9 @@ Examples:
     )
 
     parser.add_argument(
-        '--creds',
-        default='credentials.ini',
-        help='Path to credentials file (default: credentials.ini)'
+        '--env',
+        default='.env',
+        help='Path to environment file (default: .env)'
     )
 
     args = parser.parse_args()
@@ -229,7 +238,7 @@ Examples:
         logger.info(f"Configuration loaded from: {args.config}")
 
         # Load credentials
-        credentials = load_credentials(args.creds)
+        credentials = load_credentials(args.env)
         logger.info("Credentials loaded")
 
         # Initialize database

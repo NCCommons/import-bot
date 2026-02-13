@@ -43,13 +43,15 @@ A Python bot that automatically imports files from [NC Commons](https://nccommon
 3. **Configure credentials:**
 
     ```bash
-    cp credentials.ini.example credentials.ini
+    cp .env.example .env
     ```
 
-    Edit `credentials.ini` and add your credentials:
+    Edit `.env` and add your credentials:
 
-    - NC Commons: Your username and password
-    - Wikipedia: Your bot username and bot password token
+    - `NCCOMMONS_USERNAME`: Your NC Commons username
+    - `NCCOMMONS_PASSWORD`: Your NC Commons password
+    - `WIKIPEDIA_USERNAME`: Your Wikipedia bot username (format: `BotName@BotPassword`)
+    - `WIKIPEDIA_PASSWORD`: Your Wikipedia bot password token
 
 4. **Configure settings (optional):**
 
@@ -93,8 +95,8 @@ python -m src.reports ./data/nc_files.db ./reports/summary.json
 nc_commons_bot/
 ├── bot.py                  # Main entry point
 ├── config.yaml             # Configuration
-├── credentials.ini         # Credentials (gitignored)
-├── credentials.ini.example # Credentials template
+├── .env                    # Credentials (gitignored)
+├── .env.example            # Credentials template
 ├── requirements.txt        # Python dependencies
 ├── .gitignore              # Git ignore file
 └── src/                    # Source code
@@ -119,12 +121,14 @@ Main configuration file:
 -   `processing`: Limits and retry configuration
 -   `logging`: Log file and level
 
-### credentials.ini
+### .env
 
 Credentials file (never commit to git):
 
--   `nccommons`: NC Commons login
--   `wikipedia`: Wikipedia bot password
+-   `NCCOMMONS_USERNAME`: NC Commons username
+-   `NCCOMMONS_PASSWORD`: NC Commons password
+-   `WIKIPEDIA_USERNAME`: Wikipedia bot username
+-   `WIKIPEDIA_PASSWORD`: Wikipedia bot password
 
 ## Database
 
@@ -147,7 +151,7 @@ Logs are written to both console and file:
 
 ### "Credentials file not found"
 
-Make sure you copied `credentials.ini.example` to `credentials.ini` and filled in your credentials.
+Make sure you copied `.env.example` to `.env` and filled in your credentials.
 
 ### "Login failed"
 
