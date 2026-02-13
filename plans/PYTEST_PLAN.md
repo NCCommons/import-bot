@@ -168,10 +168,11 @@ def sample_nc_template_page():
 ```
 
 **Key points:**
-- Temporary database that auto-cleans
-- Mock API objects
-- Sample data for common scenarios
-- All fixtures well-documented
+
+-   Temporary database that auto-cleans
+-   Mock API objects
+-   Sample data for common scenarios
+-   All fixtures well-documented
 
 ---
 
@@ -338,10 +339,11 @@ class TestRemoveCategories:
 ```
 
 **Coverage:**
-- ✅ Language list parsing (normal, empty, mixed)
-- ✅ NC template extraction (single, multiple, no caption)
-- ✅ Template to file syntax conversion
-- ✅ Category removal (single, multiple, case-insensitive)
+
+-   ✅ Language list parsing (normal, empty, mixed)
+-   ✅ NC template extraction (single, multiple, no caption)
+-   ✅ Template to file syntax conversion
+-   ✅ Category removal (single, multiple, case-insensitive)
 
 ---
 
@@ -488,12 +490,13 @@ class TestDatabase:
 ```
 
 **Coverage:**
-- ✅ Database initialization
-- ✅ Recording uploads (success, failed, duplicate)
-- ✅ Recording page processing
-- ✅ Checking if file uploaded
-- ✅ Statistics (overall and by language)
-- ✅ UPSERT behavior
+
+-   ✅ Database initialization
+-   ✅ Recording uploads (success, failed, duplicate)
+-   ✅ Recording page processing
+-   ✅ Checking if file uploaded
+-   ✅ Statistics (overall and by language)
+-   ✅ UPSERT behavior
 
 ---
 
@@ -640,13 +643,14 @@ class TestFileUploader:
 ```
 
 **Coverage:**
-- ✅ Successful upload (URL method)
-- ✅ Already uploaded check
-- ✅ Duplicate file handling
-- ✅ Fallback to download method
-- ✅ Error recording in database
-- ✅ Description processing
-- ✅ Download and upload method
+
+-   ✅ Successful upload (URL method)
+-   ✅ Already uploaded check
+-   ✅ Duplicate file handling
+-   ✅ Fallback to download method
+-   ✅ Error recording in database
+-   ✅ Description processing
+-   ✅ Download and upload method
 
 ---
 
@@ -833,39 +837,45 @@ class TestPageProcessor:
 ```
 
 **Coverage:**
-- ✅ Processing page with templates
-- ✅ Processing page without templates
-- ✅ Handling upload failures
-- ✅ Adding category
-- ✅ Not duplicating category
-- ✅ Template replacement
-- ✅ Continuing on individual errors
+
+-   ✅ Processing page with templates
+-   ✅ Processing page without templates
+-   ✅ Handling upload failures
+-   ✅ Adding category
+-   ✅ Not duplicating category
+-   ✅ Template replacement
+-   ✅ Continuing on individual errors
 
 ---
 
 ## Running Tests
 
 ### Run all tests:
+
 ```bash
 pytest
 ```
 
 ### Run with coverage:
+
 ```bash
 pytest --cov=src --cov-report=html
 ```
 
 ### Run specific test file:
+
 ```bash
 pytest tests/test_parsers.py
 ```
 
 ### Run specific test:
+
 ```bash
 pytest tests/test_parsers.py::TestParseLanguageList::test_parse_simple_language_list
 ```
 
 ### Run with verbose output:
+
 ```bash
 pytest -v
 ```
@@ -875,12 +885,13 @@ pytest -v
 ## Test Coverage Goals
 
 Target coverage:
-- ✅ Parsers: 90%+ (easy to test, pure functions)
-- ✅ Database: 85%+ (straightforward SQLite operations)
-- ✅ Uploader: 75%+ (mocking required)
-- ✅ Processor: 75%+ (integration-like tests)
-- ⚠️ wiki_api: Skip (mostly mwclient wrapper)
-- ⚠️ bot.py: Skip (integration/manual testing)
+
+-   ✅ Parsers: 90%+ (easy to test, pure functions)
+-   ✅ Database: 85%+ (straightforward SQLite operations)
+-   ✅ Uploader: 75%+ (mocking required)
+-   ✅ Processor: 75%+ (integration-like tests)
+-   ⚠️ wiki_api: Skip (mostly mwclient wrapper)
+-   ⚠️ bot.py: Skip (integration/manual testing)
 
 ---
 
@@ -891,20 +902,23 @@ Target coverage:
 **Test cases:** ~35
 
 **What we test:**
+
 1. **Parsers** - Language lists, NC templates, category removal
 2. **Database** - CRUD operations, statistics, UPSERT
 3. **Uploader** - Upload methods, fallback, error handling
 4. **Processor** - Page processing, template replacement, error recovery
 
 **What we don't test:**
-- `wiki_api.py` - It's mostly a thin wrapper around mwclient
-- `bot.py` - Main orchestration (test manually)
-- `reports.py` - Simple queries (test manually)
+
+-   `wiki_api.py` - It's mostly a thin wrapper around mwclient
+-   `bot.py` - Main orchestration (test manually)
+-   `reports.py` - Simple queries (test manually)
 
 **Why this is good:**
-- ✅ Tests core business logic
-- ✅ Uses mocking appropriately
-- ✅ Fast to run (no network calls)
-- ✅ Easy to maintain
-- ✅ Good coverage without over-testing
-- ✅ All test code in English
+
+-   ✅ Tests core business logic
+-   ✅ Uses mocking appropriately
+-   ✅ Fast to run (no network calls)
+-   ✅ Easy to maintain
+-   ✅ Good coverage without over-testing
+-   ✅ All test code in English
