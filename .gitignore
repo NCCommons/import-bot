@@ -29,3 +29,4 @@ logs/
 Thumbs.db
 nc_import.zip
 .claude/settings.local.json
+.coverage
