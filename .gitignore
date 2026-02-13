@@ -28,3 +28,4 @@ logs/
 .DS_Store
 Thumbs.db
 nc_import.zip
+.claude/settings.local.json
