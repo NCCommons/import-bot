@@ -148,11 +148,11 @@ def main():
         description='NC Commons to Wikipedia Import Bot',
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
-Examples:
-  python bot.py                     # Process all languages
-  python bot.py --lang ar           # Process only Arabic
-  python bot.py --lang en --lang fr # Process English and French
-        """
+            Examples:
+            python bot.py                     # Process all languages
+            python bot.py --lang ar           # Process only Arabic
+            python bot.py --lang en --lang fr # Process English and French
+            """
     )
 
     parser.add_argument(
@@ -170,89 +170,91 @@ Examples:
 
     args = parser.parse_args()
 
+    # Load configuration
+    with open(args.config, 'r') as f:
+        config = yaml.safe_load(f)
+
+    # Setup logging
+    setup_logging(config['logging'])
+
+    logger = logging.getLogger(__name__)
+    logger.info("="*60)
+    logger.info("NC Commons Import Bot Starting")
+    logger.info("="*60)
+    logger.info(f"Configuration loaded from: {args.config}")
+
+    # Load credentials
+    credentials = load_credentials()
+    logger.info("Credentials loaded")
+
+    # Initialize database
+    database = Database(config['database']['path'])
+
+    # Connect to NC Commons
+    nc_api = NCCommonsAPI(
+        credentials['nc_username'],
+        credentials['nc_password']
+    )
+
+    # Determine which languages to process
+    if args.languages:
+        # Use languages from command line
+        languages = args.languages
+        logger.info(f"Processing {len(languages)} specified languages: {languages}")
+    else:
+        # Get all languages from NC Commons page
+        language_page = config['nc_commons']['language_page']
+        page_text = nc_api.get_page_text(language_page)
+        languages = parse_language_list(page_text)
+        logger.info(f"Processing {len(languages)} languages from {language_page}")
+
+    # Process each language
+    overall_stats = {
+        'languages_processed': 0,
+        'total_pages_processed': 0,
+        'total_pages_modified': 0,
+        'total_uploads': 0,
+        'total_errors': 0
+    }
+
+    for lang in languages:
+        try:
+            stats = process_language(lang, config, credentials, nc_api, database)
+
+            overall_stats['languages_processed'] += 1
+            overall_stats['total_pages_processed'] += stats['pages_processed']
+            overall_stats['total_pages_modified'] += stats['pages_modified']
+            overall_stats['total_uploads'] += stats['total_uploads']
+            overall_stats['total_errors'] += stats['errors']
+
+        except Exception as e:
+            logger.error(f"Failed to process language {lang}: {e}")
+            overall_stats['total_errors'] += 1
+
+    # Final summary
+    logger.info("="*60)
+    logger.info("Bot Completed")
+    logger.info("="*60)
+    logger.info(f"Languages processed: {overall_stats['languages_processed']}")
+    logger.info(f"Pages processed: {overall_stats['total_pages_processed']}")
+    logger.info(f"Pages modified: {overall_stats['total_pages_modified']}")
+    logger.info(f"Total uploads: {overall_stats['total_uploads']}")
+    logger.info(f"Errors: {overall_stats['total_errors']}")
+
+    # Get overall database statistics
+    db_stats = database.get_statistics()
+    logger.info(f"Database totals: {db_stats}")
+
+    return 0
+
+
+def safe_main():
     try:
-        # Load configuration
-        with open(args.config, 'r') as f:
-            config = yaml.safe_load(f)
-
-        # Setup logging
-        setup_logging(config['logging'])
-
-        logger = logging.getLogger(__name__)
-        logger.info("="*60)
-        logger.info("NC Commons Import Bot Starting")
-        logger.info("="*60)
-        logger.info(f"Configuration loaded from: {args.config}")
-
-        # Load credentials
-        credentials = load_credentials()
-        logger.info("Credentials loaded")
-
-        # Initialize database
-        database = Database(config['database']['path'])
-
-        # Connect to NC Commons
-        nc_api = NCCommonsAPI(
-            credentials['nc_username'],
-            credentials['nc_password']
-        )
-
-        # Determine which languages to process
-        if args.languages:
-            # Use languages from command line
-            languages = args.languages
-            logger.info(f"Processing {len(languages)} specified languages: {languages}")
-        else:
-            # Get all languages from NC Commons page
-            language_page = config['nc_commons']['language_page']
-            page_text = nc_api.get_page_text(language_page)
-            languages = parse_language_list(page_text)
-            logger.info(f"Processing {len(languages)} languages from {language_page}")
-
-        # Process each language
-        overall_stats = {
-            'languages_processed': 0,
-            'total_pages_processed': 0,
-            'total_pages_modified': 0,
-            'total_uploads': 0,
-            'total_errors': 0
-        }
-
-        for lang in languages:
-            try:
-                stats = process_language(lang, config, credentials, nc_api, database)
-
-                overall_stats['languages_processed'] += 1
-                overall_stats['total_pages_processed'] += stats['pages_processed']
-                overall_stats['total_pages_modified'] += stats['pages_modified']
-                overall_stats['total_uploads'] += stats['total_uploads']
-                overall_stats['total_errors'] += stats['errors']
-
-            except Exception as e:
-                logger.error(f"Failed to process language {lang}: {e}")
-                overall_stats['total_errors'] += 1
-
-        # Final summary
-        logger.info("="*60)
-        logger.info("Bot Completed")
-        logger.info("="*60)
-        logger.info(f"Languages processed: {overall_stats['languages_processed']}")
-        logger.info(f"Pages processed: {overall_stats['total_pages_processed']}")
-        logger.info(f"Pages modified: {overall_stats['total_pages_modified']}")
-        logger.info(f"Total uploads: {overall_stats['total_uploads']}")
-        logger.info(f"Errors: {overall_stats['total_errors']}")
-
-        # Get overall database statistics
-        db_stats = database.get_statistics()
-        logger.info(f"Database totals: {db_stats}")
-
-        return 0
-
+        return main()
     except KeyboardInterrupt:
         logger = logging.getLogger(__name__)
         logger.info("Bot interrupted by user")
         return 130
-
     except Exception as e:
         logger = logging.getLogger(__name__)
         logger.exception(f"Fatal error: {e}")
