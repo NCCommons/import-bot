@@ -13,7 +13,6 @@ Usage:
 
 import sys
 import logging
-import colorlog
 import yaml
 import argparse
 import os
@@ -25,64 +24,7 @@ from src.database import Database
 from src.uploader import FileUploader
 from src.processor import PageProcessor
 from src.parsers import parse_language_list
-
-
-def setup_logging(config: dict):
-    """
-    Configure logging based on configuration.
-
-    Sets up both file and console logging with appropriate formatters
-    and handlers.
-
-    Args:
-        config: Logging configuration dictionary
-    """
-    # Get logging configuration
-    log_level = getattr(logging, config.get('level', 'INFO').upper())
-    log_file = Path(config.get('file', './logs/bot.log'))
-    max_bytes = config.get('max_bytes', 10485760)  # 10MB default
-    backup_count = config.get('backup_count', 5)
-
-    # Create logs directory
-    log_file.parent.mkdir(parents=True, exist_ok=True)
-
-    # File formatter (plain text for log files)
-    file_formatter = logging.Formatter(
-        '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-    )
-
-    # Console formatter with colors
-    console_formatter = colorlog.ColoredFormatter(
-        '%(log_color)s%(asctime)s - %(name)s - %(levelname)s - %(message)s%(reset)s',
-        log_colors={
-            'DEBUG': 'cyan',
-            'INFO': 'green',
-            'WARNING': 'yellow',
-            'ERROR': 'red',
-            'CRITICAL': 'red,bg_white',
-        }
-    )
-
-    # File handler with rotation
-    from logging.handlers import RotatingFileHandler
-    file_handler = RotatingFileHandler(
-        log_file,
-        maxBytes=max_bytes,
-        backupCount=backup_count
-    )
-    file_handler.setFormatter(file_formatter)
-
-    # Console handler with colors
-    console_handler = logging.StreamHandler()
-    console_handler.setFormatter(console_formatter)
-
-    # Configure root logger
-    root_logger = logging.getLogger()
-    root_logger.setLevel(log_level)
-    root_logger.addHandler(file_handler)
-    root_logger.addHandler(console_handler)
-
-    logging.info("Logging configured")
+from src.logging_config import setup_logging
 
 
 def load_credentials() -> dict:
