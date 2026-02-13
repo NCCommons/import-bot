@@ -40,9 +40,9 @@ def setup_logging(config: dict):
         '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
     )
 
-    # Console formatter with colors
+    # Console formatter with colors (only for levelname)
     console_formatter = colorlog.ColoredFormatter(
-        '%(log_color)s%(asctime)s - %(name)s - %(levelname)s - %(message)s%(reset)s',
+        '%(asctime)s - %(name)s - %(log_color)s%(levelname)s%(reset)s - %(message)s',
         log_colors={
             'DEBUG': 'cyan',
             'INFO': 'green',
