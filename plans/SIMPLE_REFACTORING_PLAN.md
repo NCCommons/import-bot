@@ -29,6 +29,13 @@ nc_commons_bot/
     ├── processor.py         # Page processing (replaces: wrk_pages.py)
     ├── database.py          # SQLite operations (replaces: db.py, db_bot.py)
     └── reports.py           # Simple reporting (new)
+├── tests/
+│   ├── __init__.py
+│   ├── conftest.py
+│   ├── test_wiki_api/
+│   ├── test_parsers/
+│   ├── test_processors/
+│   └── test_database/
 ```
 
 **Total: 8 files instead of 12!**

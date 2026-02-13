@@ -32,14 +32,17 @@ nc_commons_bot/
 ├── README.md               # Documentation
 ├── .gitignore              # Git ignore file
 ├── bot.py                  # Main entry point
-└── src/                    # Source code directory
-    ├── __init__.py         # Package init (can be empty)
-    ├── wiki_api.py         # MediaWiki API wrapper (200 lines)
-    ├── parsers.py          # Wikitext parsing (100 lines)
-    ├── uploader.py         # File upload logic (100 lines)
-    ├── processor.py        # Page processing (100 lines)
-    ├── database.py         # SQLite operations (150 lines)
-    └── reports.py          # Reporting (50 lines)
+├── src/                    # Source code directory
+│   ├── __init__.py         # Package init (can be empty)
+│   ├── wiki_api.py         # MediaWiki API wrapper (200 lines)
+│   ├── parsers.py          # Wikitext parsing (100 lines)
+│   ├── uploader.py         # File upload logic (100 lines)
+│   ├── processor.py        # Page processing (100 lines)
+│   ├── database.py         # SQLite operations (150 lines)
+│   └── reports.py          # Reporting (50 lines)
+└── tests/
+    ├── __init__.py
+    └── conftest.py
 ```
 
 **Total target: ~900 lines of clean Python code**
