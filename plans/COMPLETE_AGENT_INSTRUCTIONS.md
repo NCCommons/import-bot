@@ -11,6 +11,7 @@ You will write a complete NC Commons Import Bot from scratch. The old code will 
 ## Understanding the Bot's Purpose
 
 The bot performs 5 simple steps:
+
 1. **Fetch language list** from NC Commons page
 2. **Find pages** containing {{NC|filename.jpg}} templates on Wikipedia
 3. **Upload files** from NC Commons to Wikipedia
@@ -60,50 +61,52 @@ PyYAML>=6.0
 ```
 
 **Why these libraries:**
-- `mwclient`: Standard library for MediaWiki API (replaces custom newapi)
-- `wikitextparser`: Parse wikitext templates
-- `PyYAML`: Load configuration from YAML files
+
+-   `mwclient`: Standard library for MediaWiki API (replaces custom newapi)
+-   `wikitextparser`: Parse wikitext templates
+-   `PyYAML`: Load configuration from YAML files
 
 #### 1.2 Create `config.yaml`
 
 ```yaml
 # NC Commons configuration
 nc_commons:
-  site: "nccommons.org"
-  language_page: "User:Mr. Ibrahem/import bot"
+    site: "nccommons.org"
+    language_page: "User:Mr. Ibrahem/import bot"
 
 # Wikipedia configuration
 wikipedia:
-  upload_comment: "Bot: import from nccommons.org"
-  category: "Category:Contains images from NC Commons"
+    upload_comment: "Bot: import from nccommons.org"
+    category: "Category:Contains images from NC Commons"
 
 # Database configuration
 database:
-  path: "./data/nc_files.db"
+    path: "./data/nc_files.db"
 
 # Processing limits and retry logic
 processing:
-  max_pages_per_language: 10000
-  max_retry_attempts: 3
-  retry_delay_seconds: 5
-  retry_backoff_multiplier: 2
+    max_pages_per_language: 10000
+    max_retry_attempts: 3
+    retry_delay_seconds: 5
+    retry_backoff_multiplier: 2
 
 # Logging configuration
 logging:
-  level: "INFO"  # DEBUG, INFO, WARNING, ERROR
-  file: "./logs/bot.log"
-  max_bytes: 10485760  # 10MB
-  backup_count: 5
+    level: "INFO" # DEBUG, INFO, WARNING, ERROR
+    file: "./logs/bot.log"
+    max_bytes: 10485760 # 10MB
+    backup_count: 5
 ```
 
 **Configuration explained:**
-- `nc_commons.site`: NC Commons domain
-- `nc_commons.language_page`: Page containing list of languages to process
-- `wikipedia.upload_comment`: Edit summary for uploads
-- `wikipedia.category`: Category to add to imported files
-- `database.path`: SQLite database file location
-- `processing.*`: Retry logic and limits
-- `logging.*`: Where and how to log
+
+-   `nc_commons.site`: NC Commons domain
+-   `nc_commons.language_page`: Page containing list of languages to process
+-   `wikipedia.upload_comment`: Edit summary for uploads
+-   `wikipedia.category`: Category to add to imported files
+-   `database.path`: SQLite database file location
+-   `processing.*`: Retry logic and limits
+-   `logging.*`: Where and how to log
 
 #### 1.3 Create `credentials.ini.example`
 
@@ -177,19 +180,21 @@ Create `src/wiki_api.py` - this is the foundation of the bot.
 #### Design Requirements:
 
 1. **Base class `WikiAPI`:**
-   - Connect to MediaWiki sites using mwclient
-   - Handle login
-   - Implement retry logic with exponential backoff
-   - Log all API operations
-   - Methods: `get_page_text()`, `save_page()`
+
+    - Connect to MediaWiki sites using mwclient
+    - Handle login
+    - Implement retry logic with exponential backoff
+    - Log all API operations
+    - Methods: `get_page_text()`, `save_page()`
 
 2. **Subclass `NCCommonsAPI(WikiAPI)`:**
-   - Specific to NC Commons operations
-   - Methods: `get_image_url()`, `get_file_description()`
+
+    - Specific to NC Commons operations
+    - Methods: `get_image_url()`, `get_file_description()`
 
 3. **Subclass `WikipediaAPI(WikiAPI)`:**
-   - Specific to Wikipedia operations
-   - Methods: `get_pages_with_template()`, `upload_from_url()`, `upload_from_file()`
+    - Specific to Wikipedia operations
+    - Methods: `get_pages_with_template()`, `upload_from_url()`, `upload_from_file()`
 
 #### Implementation Guide:
 
@@ -480,12 +485,13 @@ class WikipediaAPI(WikiAPI):
 ```
 
 **Key points:**
-- All API calls wrapped with retry decorator
-- Clear logging at appropriate levels
-- Type hints for all parameters
-- Comprehensive docstrings
-- Handle duplicate files gracefully
-- All strings in English
+
+-   All API calls wrapped with retry decorator
+-   Clear logging at appropriate levels
+-   Type hints for all parameters
+-   Comprehensive docstrings
+-   Handle duplicate files gracefully
+-   All strings in English
 
 ---
 
@@ -641,11 +647,12 @@ def remove_categories(text: str) -> str:
 ```
 
 **Key points:**
-- Dataclass for template representation
-- Clear conversion to file syntax
-- Robust parsing with fallbacks
-- Comprehensive logging
-- All documentation in English
+
+-   Dataclass for template representation
+-   Clear conversion to file syntax
+-   Robust parsing with fallbacks
+-   Comprehensive logging
+-   All documentation in English
 
 ---
 
@@ -886,12 +893,13 @@ class Database:
 ```
 
 **Key points:**
-- Context manager for safe connection handling
-- Proper error handling with rollback
-- UPSERT logic (INSERT OR REPLACE)
-- Indexes for performance
-- Statistics queries
-- All comments in English
+
+-   Context manager for safe connection handling
+-   Proper error handling with rollback
+-   UPSERT logic (INSERT OR REPLACE)
+-   Indexes for performance
+-   Statistics queries
+-   All comments in English
 
 ---
 
@@ -1112,12 +1120,13 @@ class FileUploader:
 ```
 
 **Key points:**
-- Two upload methods (URL and file)
-- Automatic fallback on error
-- Temporary file cleanup
-- Database recording for all outcomes
-- Description processing
-- Comprehensive error handling
+
+-   Two upload methods (URL and file)
+-   Automatic fallback on error
+-   Temporary file cleanup
+-   Database recording for all outcomes
+-   Description processing
+-   Comprehensive error handling
 
 ---
 
@@ -1296,11 +1305,12 @@ class PageProcessor:
 ```
 
 **Key points:**
-- Continue processing even if individual files fail
-- Build replacement map before modifying text
-- Add category only if not present
-- Informative edit summary
-- Comprehensive logging
+
+-   Continue processing even if individual files fail
+-   Build replacement map before modifying text
+-   Add category only if not present
+-   Informative edit summary
+-   Comprehensive logging
 
 ---
 
@@ -1426,11 +1436,12 @@ if __name__ == '__main__':
 ```
 
 **Key points:**
-- Queries for overall and per-language stats
-- Recent errors tracking
-- JSON export with proper encoding
-- Can run standalone
-- Simple and focused
+
+-   Queries for overall and per-language stats
+-   Recent errors tracking
+-   JSON export with proper encoding
+-   Can run standalone
+-   Simple and focused
 
 ---
 
@@ -1763,12 +1774,13 @@ if __name__ == '__main__':
 ```
 
 **Key points:**
-- Comprehensive command-line interface
-- Rotating file logs
-- Graceful error handling
-- Progress tracking
-- Summary statistics
-- Exit codes for automation
+
+-   Comprehensive command-line interface
+-   Rotating file logs
+-   Graceful error handling
+-   Progress tracking
+-   Summary statistics
+-   Exit codes for automation
 
 ---
 
@@ -1776,64 +1788,68 @@ if __name__ == '__main__':
 
 Create comprehensive documentation:
 
-``````markdown
+````markdown
 # NC Commons Import Bot
 
 A Python bot that automatically imports files from [NC Commons](https://nccommons.org) to Wikipedia across multiple languages.
 
 ## Features
 
-- 🌍 Multi-language support (processes multiple Wikipedias)
-- 📁 Automatic file uploads from NC Commons
-- 🔄 Template replacement ({{NC}} → [[File:...]])
-- 💾 SQLite database for tracking
-- 🔁 Automatic retry with exponential backoff
-- 📊 Statistics and reporting
-- 🪵 Comprehensive logging
+-   🌍 Multi-language support (processes multiple Wikipedias)
+-   📁 Automatic file uploads from NC Commons
+-   🔄 Template replacement ({{NC}} → [[File:...]])
+-   💾 SQLite database for tracking
+-   🔁 Automatic retry with exponential backoff
+-   📊 Statistics and reporting
+-   🪵 Comprehensive logging
 
 ## How It Works
 
 1. Reads a list of languages from NC Commons
 2. For each language:
-   - Finds Wikipedia pages with `{{NC|filename.jpg}}` templates
-   - Downloads file info from NC Commons
-   - Uploads files to Wikipedia
-   - Replaces templates with `[[File:filename.jpg|thumb|caption]]`
-   - Adds "Files imported from NC Commons" category
+    - Finds Wikipedia pages with `{{NC|filename.jpg}}` templates
+    - Downloads file info from NC Commons
+    - Uploads files to Wikipedia
+    - Replaces templates with `[[File:filename.jpg|thumb|caption]]`
+    - Adds "Files imported from NC Commons" category
 3. Records everything in SQLite database
 
 ## Installation
 
 ### Requirements
 
-- Python 3.8 or higher
-- pip
+-   Python 3.8 or higher
+-   pip
 
 ### Setup
 
 1. **Clone or download this repository**
 
 2. **Install dependencies:**
-   ```bash
-   pip install -r requirements.txt
-   ```
+
+    ```bash
+    pip install -r requirements.txt
+    ```
 
 3. **Configure credentials:**
-   ```bash
-   cp credentials.ini.example credentials.ini
-   ```
 
-   Edit `credentials.ini` and add your credentials:
-   - NC Commons: Your username and password
-   - Wikipedia: Your bot username and bot password token
+    ```bash
+    cp credentials.ini.example credentials.ini
+    ```
+
+    Edit `credentials.ini` and add your credentials:
+
+    - NC Commons: Your username and password
+    - Wikipedia: Your bot username and bot password token
 
 4. **Configure settings (optional):**
 
-   Edit `config.yaml` to customize:
-   - Processing limits
-   - Retry behavior
-   - Logging levels
-   - Database path
+    Edit `config.yaml` to customize:
+
+    - Processing limits
+    - Retry behavior
+    - Logging levels
+    - Database path
 
 ## Usage
 
@@ -1885,25 +1901,25 @@ nc_commons_bot/
 
 Main configuration file:
 
-- `nc_commons`: NC Commons site settings
-- `wikipedia`: Wikipedia upload settings
-- `database`: Database path
-- `processing`: Limits and retry configuration
-- `logging`: Log file and level
+-   `nc_commons`: NC Commons site settings
+-   `wikipedia`: Wikipedia upload settings
+-   `database`: Database path
+-   `processing`: Limits and retry configuration
+-   `logging`: Log file and level
 
 ### credentials.ini
 
 Credentials file (never commit to git):
 
-- `nccommons`: NC Commons login
-- `wikipedia`: Wikipedia bot password
+-   `nccommons`: NC Commons login
+-   `wikipedia`: Wikipedia bot password
 
 ## Database
 
 The bot uses SQLite to track:
 
-- **uploads**: Every file upload attempt (success/failed/duplicate)
-- **pages**: Every page processed
+-   **uploads**: Every file upload attempt (success/failed/duplicate)
+-   **pages**: Every page processed
 
 Database location: `./data/nc_files.db` (configurable)
 
@@ -1911,9 +1927,9 @@ Database location: `./data/nc_files.db` (configurable)
 
 Logs are written to both console and file:
 
-- Default location: `./logs/bot.log`
-- Rotating logs (10MB max, 5 backups)
-- Configurable log level
+-   Default location: `./logs/bot.log`
+-   Rotating logs (10MB max, 5 backups)
+-   Configurable log level
 
 ## Troubleshooting
 
@@ -1923,9 +1939,9 @@ Make sure you copied `credentials.ini.example` to `credentials.ini` and filled i
 
 ### "Login failed"
 
-- For Wikipedia: Use bot password format (`BotName@BotPassword`, not your main password)
-- Check that credentials are correct
-- Ensure bot has appropriate permissions
+-   For Wikipedia: Use bot password format (`BotName@BotPassword`, not your main password)
+-   Check that credentials are correct
+-   Ensure bot has appropriate permissions
 
 ### "Upload failed: copyupload"
 
@@ -1935,10 +1951,10 @@ This means URL upload is disabled. The bot will automatically retry with file do
 
 ### Code Style
 
-- All code uses English for comments, docstrings, and variable names
-- Type hints for all functions
-- Comprehensive docstrings
-- PEP 8 compliant
+-   All code uses English for comments, docstrings, and variable names
+-   Type hints for all functions
+-   Comprehensive docstrings
+-   PEP 8 compliant
 
 ### Testing
 
@@ -1964,16 +1980,18 @@ python -c "from src.database import Database; db = Database('./test.db'); print(
 Created for the NC Commons to Wikipedia import workflow.
 
 Uses:
-- [mwclient](https://github.com/mwclient/mwclient) - MediaWiki API client
-- [wikitextparser](https://github.com/5j9/wikitextparser) - Wikitext parsing
-- [PyYAML](https://pyyaml.org/) - YAML configuration
+
+-   [mwclient](https://github.com/mwclient/mwclient) - MediaWiki API client
+-   [wikitextparser](https://github.com/5j9/wikitextparser) - Wikitext parsing
+-   [PyYAML](https://pyyaml.org/) - YAML configuration
 
 ## Support
 
 For issues or questions:
-- Open an issue on GitHub
-- Contact: [Your contact]
-``````
+
+-   Open an issue on GitHub
+-   Contact: [Your contact]
+````
 
 ---
 
@@ -1982,71 +2000,78 @@ For issues or questions:
 Before finishing, verify:
 
 **Files Created:**
-- [ ] `requirements.txt`
-- [ ] `config.yaml`
-- [ ] `credentials.ini.example`
-- [ ] `.gitignore`
-- [ ] `README.md`
-- [ ] `bot.py`
-- [ ] `src/__init__.py`
-- [ ] `src/wiki_api.py`
-- [ ] `src/parsers.py`
-- [ ] `src/database.py`
-- [ ] `src/uploader.py`
-- [ ] `src/processor.py`
-- [ ] `src/reports.py`
+
+-   [ ] `requirements.txt`
+-   [ ] `config.yaml`
+-   [ ] `credentials.ini.example`
+-   [ ] `.gitignore`
+-   [ ] `README.md`
+-   [ ] `bot.py`
+-   [ ] `src/__init__.py`
+-   [ ] `src/wiki_api.py`
+-   [ ] `src/parsers.py`
+-   [ ] `src/database.py`
+-   [ ] `src/uploader.py`
+-   [ ] `src/processor.py`
+-   [ ] `src/reports.py`
 
 **Code Quality:**
-- [ ] All comments in English
-- [ ] All docstrings in English
-- [ ] All variable names in English
-- [ ] Type hints on all functions
-- [ ] Comprehensive error handling
-- [ ] Proper logging throughout
-- [ ] No hardcoded values (use config)
+
+-   [ ] All comments in English
+-   [ ] All docstrings in English
+-   [ ] All variable names in English
+-   [ ] Type hints on all functions
+-   [ ] Comprehensive error handling
+-   [ ] Proper logging throughout
+-   [ ] No hardcoded values (use config)
 
 **Functionality:**
-- [ ] Can connect to NC Commons
-- [ ] Can connect to Wikipedia
-- [ ] Can parse language list
-- [ ] Can extract NC templates
-- [ ] Can upload files
-- [ ] Can process pages
-- [ ] Can save to database
-- [ ] Can generate reports
+
+-   [ ] Can connect to NC Commons
+-   [ ] Can connect to Wikipedia
+-   [ ] Can parse language list
+-   [ ] Can extract NC templates
+-   [ ] Can upload files
+-   [ ] Can process pages
+-   [ ] Can save to database
+-   [ ] Can generate reports
 
 **Testing:**
-- [ ] Configuration loads correctly
-- [ ] Credentials load correctly
-- [ ] Database initializes
-- [ ] API connections work
-- [ ] Parsing functions work
-- [ ] Bot runs without errors
+
+-   [ ] Configuration loads correctly
+-   [ ] Credentials load correctly
+-   [ ] Database initializes
+-   [ ] API connections work
+-   [ ] Parsing functions work
+-   [ ] Bot runs without errors
 
 ---
 
 ## Key Reminders
 
 ### Language Requirements
-- **ALL** code comments in English
-- **ALL** docstrings in English
-- **ALL** variable names in English
-- **ALL** log messages in English
-- **ALL** documentation in English
+
+-   **ALL** code comments in English
+-   **ALL** docstrings in English
+-   **ALL** variable names in English
+-   **ALL** log messages in English
+-   **ALL** documentation in English
 
 ### Simplicity
-- Don't over-engineer
-- Keep files small (50-200 lines each)
-- Use standard libraries
-- Clear, readable code
-- Simple is better than complex
+
+-   Don't over-engineer
+-   Keep files small (50-200 lines each)
+-   Use standard libraries
+-   Clear, readable code
+-   Simple is better than complex
 
 ### Best Practices
-- Type hints everywhere
-- Comprehensive error handling
-- Proper logging levels
-- Context managers for resources
-- Clean code structure
+
+-   Type hints everywhere
+-   Comprehensive error handling
+-   Proper logging levels
+-   Context managers for resources
+-   Clean code structure
 
 ---
 
@@ -2054,15 +2079,15 @@ Before finishing, verify:
 
 The refactored bot is successful when:
 
-- ✅ All 8 files created and working
-- ✅ Total code ~900 lines
-- ✅ Uses mwclient (no custom API)
-- ✅ Uses wikitextparser
-- ✅ Uses Python logging
-- ✅ Configuration in YAML
-- ✅ All English documentation/code
-- ✅ Can run `python bot.py` successfully
-- ✅ Simple, clean, maintainable
+-   ✅ All 8 files created and working
+-   ✅ Total code ~900 lines
+-   ✅ Uses mwclient (no custom API)
+-   ✅ Uses wikitextparser
+-   ✅ Uses Python logging
+-   ✅ Configuration in YAML
+-   ✅ All English documentation/code
+-   ✅ Can run `python bot.py` successfully
+-   ✅ Simple, clean, maintainable
 
 ---
 
