@@ -109,9 +109,12 @@ class Database:
         with self._get_connection() as conn:
             conn.execute(
                 """
-                INSERT OR REPLACE INTO uploads
-                (filename, language, status, error, uploaded_at)
+                INSERT INTO uploads (filename, language, status, error, uploaded_at)
                 VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
+                ON CONFLICT(filename, language) DO UPDATE SET
+                    status = excluded.status,
+                    error = excluded.error,
+                    uploaded_at = excluded.uploaded_at
             """,
                 (filename, language, status, error),
             )
@@ -131,9 +134,12 @@ class Database:
         with self._get_connection() as conn:
             conn.execute(
                 """
-                INSERT OR REPLACE INTO pages
-                (page_title, language, templates_found, files_uploaded, processed_at)
+                INSERT INTO pages (page_title, language, templates_found, files_uploaded, processed_at)
                 VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
+                ON CONFLICT(page_title, language) DO UPDATE SET
+                    templates_found = excluded.templates_found,
+                    files_uploaded = excluded.files_uploaded,
+                    processed_at = excluded.processed_at
             """,
                 (page_title, language, templates_found, files_uploaded),
             )
