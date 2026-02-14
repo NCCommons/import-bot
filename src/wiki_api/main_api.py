@@ -60,18 +60,20 @@ class WikiAPI(UploadHandler):
         """
         if self.login_done:
             return
-
+        login_type = ""
         try:
             logger.info(f"Logging in as {self.username}")
             self.site.login(self.username, self.password)
+            login_type = "login"
         except mwclient.errors.LoginError as e:
             if "BotPasswordSessionProvider" in str(e):
                 self.site.clientlogin(None, username=self.username, password=self.password)
+                login_type = "clientlogin"
             else:
                 logger.exception(f"Login failed for {self.username}: {e}")
 
         if self.site.logged_in:
-            logger.info(f"Login successful for {self.username}")
+            logger.info(f"Login (action:{login_type}) successful for {self.username}")
             self.login_done = True
 
     def get_page_text(self, title: str) -> str:
