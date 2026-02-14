@@ -10,6 +10,7 @@ import logging
 from typing import Any, BinaryIO, Dict, Optional, Union, cast
 
 import mwclient
+from mwclient.errors import APIError
 from mwclient.client import Site
 
 from .api_errors import (
@@ -70,7 +71,9 @@ class UploadHandler:
             if code in {"permissiondenied", "badtoken", "mwoauth-invalid-authorization"}:
                 raise InsufficientPermissionError()
 
-            raise Exception(f"upload error: {code}: {err_info}")
+            # {'error': {'code': 'mustbeloggedin', 'info': 'You must be logged in to upload this file.', '*': ''}, }
+            # raise Exception(f"upload error: {code}: {err_info}")
+            raise APIError(code, err_info, {})
 
         upload = info.get("upload", {})
 
@@ -154,7 +157,7 @@ class UploadHandler:
 
         return response
 
-    def upload(
+    def upload_wrap(
         self,
         file: str | BinaryIO | None,
         filename: str,

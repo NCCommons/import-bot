@@ -6,7 +6,7 @@ through the MediaWiki API.
 """
 
 import logging
-from typing import Optional
+from typing import Any, Optional
 import mwclient
 from mwclient.client import Site
 
@@ -92,3 +92,33 @@ class WikiAPI(UploadHandler):
 
         page = self.site.pages[title]
         return page.save(text, summary=summary)
+
+    def upload(
+        self,
+        file: Any,
+        filename: str,
+        description: str,
+        comment: str,
+        url: str | None = None,
+    ) -> dict:
+        """
+        Upload a file to the MediaWiki site.
+
+        Args:
+            file: File-like object to upload (or None if using URL upload)
+            filename: Target filename on the wiki
+            description: File description page content
+            comment: Upload comment/summary
+            url: Optional URL for direct upload (if supported)
+
+        Returns:
+            Dictionary with 'success' key indicating result and optional 'error' key for error details
+        """
+
+        self.ensure_logged_in()
+
+        if not self.login_done:
+            logger.error("Cannot save page without successful login")
+            return False
+
+        return self.upload_wrap(file=file, filename=filename, description=description, comment=comment, url=url)

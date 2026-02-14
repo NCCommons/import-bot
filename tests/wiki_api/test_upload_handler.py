@@ -158,7 +158,7 @@ class TestHandleApiResult:
 
         info = {"error": {"code": "unknown", "info": "Unknown error"}}
 
-        with pytest.raises(Exception, match="upload error: unknown"):
+        with pytest.raises(Exception, match="('unknown', 'Unknown error', {})"):
             handler.handle_api_result(info, {})
 
     def test_success_result(self):
