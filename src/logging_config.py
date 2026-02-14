@@ -11,7 +11,13 @@ from pathlib import Path
 import colorlog
 
 
-def setup_logging(log_level: str, log_file: str, max_bytes: int, backup_count: int):
+def setup_logging(
+    log_level: str,
+    name: str = __name__,
+    log_file: str = None,
+    max_bytes: int = 0,
+    backup_count: int = 0,
+) -> None:
     """
     Configure logging based on configuration.
 
@@ -25,6 +31,11 @@ def setup_logging(log_level: str, log_file: str, max_bytes: int, backup_count: i
         max_bytes: Maximum size of log file before rotation
         backup_count: Number of backup files to keep
     """
+    root_logger = logging.getLogger(name)
+
+    if root_logger.handlers:
+        return
+
     # Convert log level string to logging constant
     level = getattr(logging, log_level.upper())
 
@@ -45,9 +56,9 @@ def setup_logging(log_level: str, log_file: str, max_bytes: int, backup_count: i
     console_handler.setFormatter(console_formatter)
 
     # Configure root logger
-    root_logger = logging.getLogger()
     root_logger.setLevel(level)
     root_logger.addHandler(console_handler)
+    root_logger.propagate = False
 
     if log_file:
         log_file_path = Path(log_file)

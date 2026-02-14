@@ -15,16 +15,8 @@ load_dotenv()  # Load environment variables from .env file
 # Add project root to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from src.logging_config import setup_logging  # noqa: E402
 from src.wiki_api import WikipediaAPI  # noqa: E402
 from src.utils.temporary_handler import TemporaryDownloadFile  # noqa: E402
-
-setup_logging(
-    "INFO",
-    "./logs/bot.log",
-    10485760,
-    5,
-)
 
 
 def main():
