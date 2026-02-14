@@ -57,7 +57,7 @@ class TestPageProcessor:
         mock_wiki_api.lang = "en"
 
         # Mock successful uploads
-        processor.uploader.upload_file.return_value = True
+        processor.uploader.upload_file.return_value = {"success": True}
 
         result = processor.process_page("Test Page")
 
@@ -86,7 +86,7 @@ class TestPageProcessor:
         mock_wiki_api.lang = "en"
 
         # First upload succeeds, second fails
-        processor.uploader.upload_file.side_effect = [True, False]
+        processor.uploader.upload_file.side_effect = [{"success": True}, {"success": False, "error": "exists"}]
 
         result = processor.process_page("Test Page")
 
@@ -106,7 +106,7 @@ class TestPageProcessor:
         mock_wiki_api.lang = "en"
 
         # Upload fails
-        processor.uploader.upload_file.return_value = False
+        processor.uploader.upload_file.return_value = {"success": False, "error": "failed"}
 
         result = processor.process_page("Test Page")
 
@@ -127,7 +127,7 @@ class TestPageProcessor:
 
         mock_wiki_api.get_page_text.return_value = page_text
         mock_wiki_api.lang = "en"
-        processor.uploader.upload_file.return_value = True
+        processor.uploader.upload_file.return_value = {"success": True}
 
         processor.process_page("Test Page")
 
@@ -145,7 +145,7 @@ class TestPageProcessor:
 
         mock_wiki_api.get_page_text.return_value = page_text
         mock_wiki_api.lang = "en"
-        processor.uploader.upload_file.return_value = True
+        processor.uploader.upload_file.return_value = {"success": True}
 
         processor.process_page("Test Page")
 
@@ -162,7 +162,7 @@ class TestPageProcessor:
 
         mock_wiki_api.get_page_text.return_value = page_text
         mock_wiki_api.lang = "en"
-        processor.uploader.upload_file.return_value = True
+        processor.uploader.upload_file.return_value = {"success": True}
 
         processor.process_page("Test Page")
 
@@ -186,7 +186,7 @@ class TestPageProcessor:
 
         mock_wiki_api.get_page_text.return_value = page_text
         mock_wiki_api.lang = "en"
-        processor.uploader.upload_file.return_value = True
+        processor.uploader.upload_file.return_value = {"success": True}
 
         processor.process_page("Test Page")
 

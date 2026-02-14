@@ -84,15 +84,23 @@ class PageProcessor:
 
                 try:
                     # Upload file
-                    uploaded = self.uploader.upload_file(template.filename)
+                    result = self.uploader.upload_file(template.filename)
 
-                    if uploaded:
+                    if result.get("success"):
                         files_uploaded += 1
                         # Map original template to file syntax
                         replacements[template.original_text] = template.to_file_syntax()
                         logger.info(f"File uploaded successfully: {template.filename}")
+                    elif result.get("error") == "duplicate":
+                        # File is a duplicate, use the existing file's name
+                        files_uploaded += 1
+                        duplicate_of = result.get("duplicate_of", template.filename)
+                        # Create replacement with the duplicate filename
+                        file_syntax = f"[[File:{duplicate_of}|thumb|{template.caption}]]"
+                        replacements[template.original_text] = file_syntax
+                        logger.info(f"File is duplicate of {duplicate_of}, using existing file: {duplicate_of}")
                     else:
-                        logger.info(f"File not uploaded (duplicate or error): {template.filename}")
+                        logger.info(f"File not uploaded (error: {result.get('error')}): {template.filename}")
 
                 except Exception as e:
                     logger.error(f"Failed to upload {template.filename}: {e}")

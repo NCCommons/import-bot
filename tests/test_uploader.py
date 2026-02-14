@@ -32,7 +32,7 @@ class TestFileUploader:
 
         result = uploader.upload_file("existing.jpg")
 
-        assert result is False
+        assert result == {"success": False, "error": "already_uploaded"}
         # Should not attempt to fetch from NC Commons
         uploader.nc_api.get_image_url.assert_not_called()
 
@@ -46,7 +46,7 @@ class TestFileUploader:
 
         result = uploader.upload_file("test.jpg")
 
-        assert result is True
+        assert result == {"success": True}
 
         # Verify NC Commons was queried
         mock_nc_api.get_image_url.assert_called_once_with("test.jpg")
@@ -67,7 +67,7 @@ class TestFileUploader:
 
         result = uploader.upload_file("dup.jpg")
 
-        assert result is False
+        assert result == {"success": False, "error": "exists"}
 
         # Should be recorded as exists
         with temp_db._get_connection() as conn:
@@ -92,7 +92,7 @@ class TestFileUploader:
             "test.jpg", "https://example.com/test.jpg", "Description", "Comment", "en"
         )
 
-        assert result is True
+        assert result == {"success": True}
 
         # Verify file was downloaded
         mock_retrieve.assert_called_once_with("https://example.com/test.jpg", "/tmp/test123.tmp")
@@ -118,7 +118,7 @@ class TestFileUploader:
 
         result = uploader._upload_via_download("dup.jpg", "https://example.com/dup.jpg", "Description", "Comment", "en")
 
-        assert result is False
+        assert result == {"success": False, "error": "exists"}
 
         # Still should clean up temp file
         mock_temp.__exit__.assert_called_once()
@@ -240,7 +240,7 @@ class TestFileUploader:
             with patch("pathlib.Path.unlink"):
                 result = uploader.upload_file("test.jpg")
 
-        assert result is True
+        assert result == {"success": True}
         mock_wiki_api.upload_from_file.assert_called_once()
 
     @pytest.mark.skip(reason="assert False is True")
