@@ -74,8 +74,7 @@ class Database:
                     language TEXT NOT NULL,
                     uploaded_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                     status TEXT NOT NULL,
-                    error TEXT,
-                    UNIQUE(filename, language)
+                    error TEXT
                 );
 
                 CREATE TABLE IF NOT EXISTS pages (
@@ -84,8 +83,7 @@ class Database:
                     language TEXT NOT NULL,
                     processed_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                     templates_found INTEGER,
-                    files_uploaded INTEGER,
-                    UNIQUE(page_title, language)
+                    files_uploaded INTEGER
                 );
 
                 CREATE INDEX IF NOT EXISTS idx_uploads_lang ON uploads(language);
@@ -111,10 +109,6 @@ class Database:
                 """
                 INSERT INTO uploads (filename, language, status, error, uploaded_at)
                 VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
-                ON CONFLICT(filename, language) DO UPDATE SET
-                    status = excluded.status,
-                    error = excluded.error,
-                    uploaded_at = excluded.uploaded_at
             """,
                 (filename, language, status, error),
             )
@@ -136,10 +130,6 @@ class Database:
                 """
                 INSERT INTO pages (page_title, language, templates_found, files_uploaded, processed_at)
                 VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
-                ON CONFLICT(page_title, language) DO UPDATE SET
-                    templates_found = excluded.templates_found,
-                    files_uploaded = excluded.files_uploaded,
-                    processed_at = excluded.processed_at
             """,
                 (page_title, language, templates_found, files_uploaded),
             )
