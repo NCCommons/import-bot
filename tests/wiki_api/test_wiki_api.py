@@ -17,9 +17,13 @@ class TestWikiAPI:
         mock_site = Mock()
         mock_site_class.return_value = mock_site
 
-        api = WikiAPI("test.wikipedia.org")
+        api = WikiAPI("test.wikipedia.org", username="testuser", password="testpass")
 
-        mock_site_class.assert_called_once_with("test.wikipedia.org")
+        mock_site_class.assert_called_once_with(
+            "test.wikipedia.org",
+            clients_useragent="NC Commons Import Bot/1.0 (https://github.com/your/repo)",
+            force_login=True,
+        )
         assert api.site == mock_site
 
     @patch("src.wiki_api.main_api.Site")
@@ -28,7 +32,7 @@ class TestWikiAPI:
         mock_site_class.side_effect = ConnectionError("Failed to connect")
 
         with pytest.raises(ConnectionError, match="Failed to connect"):
-            WikiAPI("test.wikipedia.org")
+            WikiAPI("test.wikipedia.org", username="testuser", password="testpass")
 
     @patch("src.wiki_api.main_api.Site")
     def test_wiki_api_with_credentials(self, mock_site_class):
@@ -79,6 +83,7 @@ class TestWikiAPI:
     def test_ensure_logged_in_success(self, mock_site_class):
         """Test successful login."""
         mock_site = Mock()
+        mock_site.logged_in = True
         mock_site_class.return_value = mock_site
 
         api = WikiAPI("test.wikipedia.org", username="testuser", password="testpass")
@@ -132,7 +137,7 @@ class TestWikiAPI:
         mock_site.pages.__getitem__.return_value = mock_page
         mock_site_class.return_value = mock_site
 
-        api = WikiAPI("test.wikipedia.org")
+        api = WikiAPI("test.wikipedia.org", username="testuser", password="testpass")
         text = api.get_page_text("Test Page")
 
         assert text == "Page content"
@@ -146,7 +151,7 @@ class TestWikiAPI:
         mock_site.pages.__getitem__.return_value = mock_page
         mock_site_class.return_value = mock_site
 
-        api = WikiAPI("test.wikipedia.org")
+        api = WikiAPI("test.wikipedia.org", username="testuser", password="testpass")
         api.save_page("Test Page", "New content", "Edit summary")
 
         mock_page.save.assert_called_once_with("New content", summary="Edit summary")

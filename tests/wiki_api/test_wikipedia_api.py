@@ -17,7 +17,11 @@ class TestWikipediaAPI:
 
         api = WikipediaAPI("en", "user", "pass")
 
-        mock_site_class.assert_called_once_with("en.wikipedia.org")
+        mock_site_class.assert_called_once_with(
+            "en.wikipedia.org",
+            clients_useragent="NC Commons Import Bot/1.0 (https://github.com/your/repo)",
+            force_login=True,
+        )
         assert api.lang == "en"
 
     @patch("src.wiki_api.main_api.Site")
@@ -28,7 +32,11 @@ class TestWikipediaAPI:
 
         api = WikipediaAPI("ar", "user", "pass")
 
-        mock_site_class.assert_called_once_with("ar.wikipedia.org")
+        mock_site_class.assert_called_once_with(
+            "ar.wikipedia.org",
+            clients_useragent="NC Commons Import Bot/1.0 (https://github.com/your/repo)",
+            force_login=True,
+        )
         assert api.lang == "ar"
 
     @patch("src.wiki_api.main_api.Site")

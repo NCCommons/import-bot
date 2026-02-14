@@ -18,7 +18,11 @@ class TestNCCommonsAPI:
 
         api = NCCommonsAPI("user", "pass")
 
-        mock_site_class.assert_called_once_with("nccommons.org")
+        mock_site_class.assert_called_once_with(
+            "nccommons.org",
+            clients_useragent="NC Commons Import Bot/1.0 (https://github.com/your/repo)",
+            force_login=True,
+        )
 
     @patch("src.wiki_api.main_api.Site")
     def test_get_image_url(self, mock_site_class):
