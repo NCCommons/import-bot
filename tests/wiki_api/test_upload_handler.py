@@ -10,7 +10,7 @@ import pytest
 from src.wiki_api import WikipediaAPI
 from src.wiki_api.api_errors import (
     DuplicateFileError,
-    FileExistsError,
+    FileExistError,
     InsufficientPermission,
     UploadByUrlDisabledError,
 )
@@ -200,7 +200,7 @@ class TestHandleApiResult:
 
         info = {"upload": {"warnings": {"exists": "File exists"}}}
 
-        with pytest.raises(FileExistsError) as exc_info:
+        with pytest.raises(FileExistError) as exc_info:
             handler.handle_api_result(info, {"filename": "test.jpg"})
 
         assert exc_info.value.file_name == "test.jpg"
@@ -339,7 +339,7 @@ class TestUploadExceptionHandling:
 
     @patch("src.wiki_api.main_api.Site")
     def test_upload_file_exists_error(self, mock_site_class):
-        """Test upload handles FileExistsError."""
+        """Test upload handles FileExistError."""
         mock_site = Mock()
         mock_site.host = "test.wikipedia.org"
         mock_site.username = "testuser"

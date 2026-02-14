@@ -73,11 +73,6 @@ class UploadHandler:
             raise Exception(f"upload error: {code}: {err_info}")
 
         upload = info.get("upload", {})
-        result = upload.get("result")
-
-        # Success
-        if result == "Success":
-            return info
 
         # Warnings handling
         warnings = upload.get("warnings", {})
@@ -145,19 +140,24 @@ class UploadHandler:
         data = self.site.raw_call("api", postdata, files)
         info = json.loads(data)
 
-        if not info:
-            info = {}
+        if file is not None:
+            file.close()
 
-        if "for notice of API deprecations and breaking changes." in info.get("error", {}).get("*", ""):
-            info["error"]["*"]= ""
+        if not info:
+            return {"error": "Empty API response"}
 
         response = info
+
+        if "for notice of API deprecations and breaking changes." in info.get("error", {}).get("*", ""):
+            info["error"]["*"] = ""
+
+        # Success
+        if info.get("upload", {}).get("result") == "Success":
+            return info
 
         if self.handle_api_result(info, kwargs=predata):
             response = info.get("upload", {})
 
-        if file is not None:
-            file.close()
         return response
 
     def upload(self, file, filename: str, description: str, comment: str, url: Optional[str] = None) -> dict:
