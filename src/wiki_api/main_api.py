@@ -10,6 +10,7 @@ import mwclient
 from typing import Optional
 from mwclient.client import Site
 from mwclient.errors import APIError
+from .api_errors import UploadError
 
 logger = logging.getLogger(__name__)
 
@@ -90,3 +91,42 @@ class WikiAPI:
 
         page = self.site.pages[title]
         return page.save(text, summary=summary)
+
+    def upload(self, site: Site, file, filename: str, description: str, comment: str, url: Optional[str] = None) -> dict:
+        """
+        Upload a file to the MediaWiki site.
+
+        Args:
+            site: mwclient Site object
+            file: File-like object to upload (or None if using URL upload)
+            filename: Target filename on the wiki
+            description: File description page content
+            comment: Upload comment/summary
+            url: Optional URL for direct upload (if supported)
+
+        Returns:
+            Dictionary with 'success' key indicating result and optional 'error' key for error details
+        """
+        try:
+            logger.info(f"Uploading file: {filename}")
+            _result = site.upload(file=file, filename=filename, description=description, comment=comment, url=url)
+            logger.info(f"Upload successful: {filename}")
+            return {"success": True}
+        except APIError as e:
+            error_msg = str(e).lower()
+            logger.error(f"Upload failed for {filename}: {error_msg}")
+            return {"success": False, "error": error_msg}
+
+        except UploadError as e:
+            error_msg = str(e).lower()
+
+            if "duplicate" in error_msg:
+                logger.warning(f"File is duplicate: {filename}")
+                return {"success": False, "error": "duplicate"}
+
+            elif "Upload by URL disabled" in error_msg:
+                logger.warning(f"URL upload disabled for {filename}")
+                return {"success": False, "error": "url_disabled"}
+
+            logger.error(f"Upload failed: {e}")
+            return {"success": False, "error": str(e)}

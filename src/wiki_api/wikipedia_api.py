@@ -6,9 +6,7 @@ through the MediaWiki API.
 """
 
 import logging
-import mwclient
 from typing import List
-from mwclient.errors import APIError
 from .main_api import WikiAPI
 
 logger = logging.getLogger(__name__)
@@ -67,32 +65,16 @@ class WikipediaAPI(WikiAPI):
             comment: Upload comment/summary
 
         Returns:
-            True if successful, False if duplicate
-
-        Raises:
-            Exception: If upload fails for reasons other than duplicate
+            Dictionary with upload result
         """
-        try:
-            logger.info(f"Uploading from URL: {filename}")
+        logger.info(f"Uploading from URL: {filename}")
 
-            result = self.site.upload(file=None, filename=filename, description=description, comment=comment, url=url)
+        result = self.upload(self.site, file=None, filename=filename, description=description, comment=comment, url=url)
 
+        if result.get("success"):
             logger.info(f"Upload successful: {filename}")
-            return {"success": True}
 
-        except APIError as e:
-            error_msg = str(e).lower()
-
-            if "duplicate" in error_msg:
-                logger.warning(f"File is duplicate: {filename}")
-                return {"success": False, "error": "duplicate"}
-
-            elif "Upload by URL disabled" in error_msg:
-                logger.warning(f"URL upload disabled for {filename}")
-                return {"success": False, "error": "url_disabled"}
-
-            logger.error(f"Upload failed: {e}")
-            return {"success": False, "error": str(e)}
+        return result
 
     def upload_from_file(self, filename: str, filepath: str, description: str, comment: str) -> dict:
         """
@@ -105,26 +87,14 @@ class WikipediaAPI(WikiAPI):
             comment: Upload comment/summary
 
         Returns:
-            True if successful, False if duplicate
-
-        Raises:
-            Exception: If upload fails for reasons other than duplicate
+            Dictionary with upload result
         """
-        try:
-            logger.info(f"Uploading from file: {filename}")
+        logger.info(f"Uploading from file: {filename}")
 
-            with open(filepath, "rb") as f:
-                result = self.site.upload(file=f, filename=filename, description=description, comment=comment)
+        with open(filepath, "rb") as f:
+            result = self.upload(self.site, file=f, filename=filename, description=description, comment=comment)
 
+        if result.get("success"):
             logger.info(f"Upload successful: {filename}")
-            return {"success": True}
 
-        except mwclient.errors.APIError as e:
-            error_msg = str(e).lower()
-
-            if "duplicate" in error_msg:
-                logger.warning(f"File is duplicate: {filename}")
-                return {"success": False, "error": "duplicate"}
-
-            logger.error(f"Upload failed: {e}")
-            return {"success": False, "error": str(e)}
+        return result

@@ -85,14 +85,13 @@ class FileUploader:
             description=description,
             comment=comment
         )
-        error = result.get("error")
         if result.get("success"):
             self.db.record_upload(filename, lang, "success")
             logger.info(f"Upload successful (URL method): {filename}")
             return True
 
         # URL upload not allowed or failed, try file upload
-        error_msg = str(error).lower()
+        error_msg = result.get("error")
 
         if error_msg == "url_disabled":
             logger.info(f"URL upload not allowed, trying file upload: {filename}")
