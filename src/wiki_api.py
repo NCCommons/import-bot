@@ -79,6 +79,9 @@ class WikiAPI:
         if username and password:
             logger.info(f"Logging in as {username}")
             self.site.login(username, password)
+        elif bool(username) != bool(password):
+            # XOR case: exactly one of username/password is provided
+            logger.warning("Both username and password are required for login; skipping login")
 
     @retry(max_attempts=3, delay=5, backoff=2)
     def get_page_text(self, title: str) -> str:
@@ -137,13 +140,26 @@ class NCCommonsAPI(WikiAPI):
 
         Returns:
             Direct URL to the image file
+
+        Raises:
+            FileNotFoundError: If the file does not exist or has no imageinfo
         """
         if not filename.startswith("File:"):
             filename = f"File:{filename}"
 
         logger.debug(f"Getting image URL for: {filename}")
         page = self.site.pages[filename]
-        return page.imageinfo["url"]
+
+        if not page.exists:
+            raise FileNotFoundError(f"File not found: {filename}")
+
+        if not page.imageinfo:
+            raise FileNotFoundError(f"No image info available for: {filename}")
+
+        try:
+            return page.imageinfo["url"]
+        except (KeyError, TypeError) as e:
+            raise FileNotFoundError(f"No URL available for file: {filename}") from e
 
     def get_file_description(self, filename: str) -> str:
         """

@@ -7,6 +7,7 @@ to Wikipedia, with appropriate error handling and database recording.
 
 import logging
 import tempfile
+import urllib.parse
 import urllib.request
 from pathlib import Path
 
@@ -128,6 +129,11 @@ class FileUploader:
         temp_file = None
 
         try:
+            # Validate URL scheme
+            parsed_url = urllib.parse.urlparse(url)
+            if parsed_url.scheme != "https":
+                raise ValueError(f"Invalid URL scheme '{parsed_url.scheme}' for {filename}: only HTTPS is allowed")
+
             # Download to temporary file
             logger.info(f"Downloading file: {filename}")
             temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".tmp")
