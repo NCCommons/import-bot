@@ -11,7 +11,7 @@ from src.wiki_api import WikipediaAPI
 from src.wiki_api.api_errors import (
     DuplicateFileError,
     FileExistError,
-    InsufficientPermission,
+    InsufficientPermissionError,
     UploadByUrlDisabledError,
 )
 
@@ -119,7 +119,7 @@ class TestHandleApiResult:
 
         info = {"error": {"code": "permissiondenied", "info": "Permission denied"}}
 
-        with pytest.raises(InsufficientPermission):
+        with pytest.raises(InsufficientPermissionError):
             handler.handle_api_result(info, {})
 
     def test_badtoken_error(self):
@@ -132,7 +132,7 @@ class TestHandleApiResult:
 
         info = {"error": {"code": "badtoken", "info": "Invalid token"}}
 
-        with pytest.raises(InsufficientPermission):
+        with pytest.raises(InsufficientPermissionError):
             handler.handle_api_result(info, {})
 
     def test_mwoauth_invalid_authorization_error(self):
@@ -145,7 +145,7 @@ class TestHandleApiResult:
 
         info = {"error": {"code": "mwoauth-invalid-authorization", "info": "Invalid OAuth"}}
 
-        with pytest.raises(InsufficientPermission):
+        with pytest.raises(InsufficientPermissionError):
             handler.handle_api_result(info, {})
 
     def test_generic_api_error(self):
@@ -347,7 +347,7 @@ class TestUploadExceptionHandling:
 
     @patch("src.wiki_api.main_api.Site")
     def test_upload_permission_error(self, mock_site_class):
-        """Test upload handles InsufficientPermission."""
+        """Test upload handles InsufficientPermissionError."""
         mock_site = Mock()
         mock_site.host = "test.wikipedia.org"
         mock_site.username = "testuser"

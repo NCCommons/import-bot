@@ -1,6 +1,6 @@
 """ """
 
-from mwclient.errors import APIError
+# from mwclient.errors import APIError
 
 
 class DuplicateFileError(Exception):
@@ -30,7 +30,7 @@ class FileExistError(Exception):
         return f"The file '{self.file_name}' already exists. Set ignore=True to overwrite it."
 
 
-class InsufficientPermission(Exception):
+class InsufficientPermissionError(Exception):
     pass
 
 

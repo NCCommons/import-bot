@@ -15,7 +15,7 @@ from mwclient.client import Site
 from .api_errors import (
     FileExistError,
     UploadByUrlDisabledError,
-    InsufficientPermission,
+    InsufficientPermissionError,
     DuplicateFileError,
 )
 
@@ -68,7 +68,7 @@ class UploadHandler:
 
             # Permission issues
             if code in {"permissiondenied", "badtoken", "mwoauth-invalid-authorization"}:
-                raise InsufficientPermission()
+                raise InsufficientPermissionError()
 
             raise Exception(f"upload error: {code}: {err_info}")
 
@@ -154,7 +154,14 @@ class UploadHandler:
 
         return response
 
-    def upload(self, file, filename: str, description: str, comment: str, url: Optional[str] = None) -> dict:
+    def upload(
+        self,
+        file: str | BinaryIO | None,
+        filename: str,
+        description: str,
+        comment: str,
+        url: str | None = None,
+    ) -> dict:
         """
         Upload a file to the MediaWiki site.
 
@@ -190,7 +197,7 @@ class UploadHandler:
             logger.warning(f"File already exists: {e.file_name}")
             return {"success": False, "error": "exists"}
 
-        except InsufficientPermission:
+        except InsufficientPermissionError:
             logger.error(f"Insufficient permissions to upload the file for user {self.site.username} on {self.site.host}")
             return {"success": False, "error": "permission_denied"}
 

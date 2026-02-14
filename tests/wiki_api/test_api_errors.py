@@ -6,7 +6,7 @@ import pytest
 from src.wiki_api.api_errors import (
     DuplicateFileError,
     FileExistError,
-    InsufficientPermission,
+    InsufficientPermissionError,
     UploadByUrlDisabledError,
 )
 
@@ -47,18 +47,18 @@ class TestFileExistError:
 
 
 class TestInsufficientPermission:
-    """Tests for InsufficientPermission class."""
+    """Tests for InsufficientPermissionError class."""
 
     def test_insufficient_permission_is_exception(self):
-        """Test InsufficientPermission is a valid exception."""
-        error = InsufficientPermission()
+        """Test InsufficientPermissionError is a valid exception."""
+        error = InsufficientPermissionError()
 
         assert isinstance(error, Exception)
 
     def test_insufficient_permission_can_be_raised(self):
-        """Test InsufficientPermission can be raised and caught."""
-        with pytest.raises(InsufficientPermission):
-            raise InsufficientPermission()
+        """Test InsufficientPermissionError can be raised and caught."""
+        with pytest.raises(InsufficientPermissionError):
+            raise InsufficientPermissionError()
 
 
 class TestUploadByUrlDisabledError:
