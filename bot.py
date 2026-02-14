@@ -60,7 +60,11 @@ def load_credentials() -> dict:
 
 
 def process_language(
-    language_code: str, config: dict, credentials: dict, nc_api: NCCommonsAPI, database: Database
+    language_code: str,
+    config: dict,
+    credentials: dict,
+    nc_api: NCCommonsAPI,
+    database: Database,
 ) -> dict:
     """
     Process all pages for a single language.
@@ -125,9 +129,24 @@ def process_language(
     return stats
 
 
-def main():
-    """Main entry point for the bot."""
-    # Parse command-line arguments
+def retrieve_language_list(args, config, nc_api):
+    logger = logging.getLogger(__name__)
+    languages = {}
+    # Determine which languages to process
+    if args.languages:
+        # Use languages from command line
+        languages = args.languages
+        logger.info(f"Processing {len(languages)} specified languages: {languages}")
+    else:
+        # Get all languages from NC Commons page
+        language_page = config["nc_commons"]["language_page"]
+        page_text = nc_api.get_page_text(language_page)
+        languages = parse_language_list(page_text)
+        logger.info(f"Processing {len(languages)} languages from {language_page}")
+    return languages
+
+
+def parse_command_line_args():
     parser = argparse.ArgumentParser(
         description="NC Commons to Wikipedia Import Bot",
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -149,48 +168,12 @@ def main():
     )
 
     args = parser.parse_args()
+    return args
 
-    # Load configuration
-    with open(args.config, "r") as f:
-        config = yaml.safe_load(f)
 
-    # Setup logging
-    logging_config = config["logging"]
-    setup_logging(
-        logging_config.get("level", "INFO"),
-        logging_config.get("file", "./logs/bot.log"),
-        logging_config.get("max_bytes", 10485760),
-        logging_config.get("backup_count", 5),
-    )
+def process_languages(config, credentials, database, nc_api, languages):
 
     logger = logging.getLogger(__name__)
-    logger.info("=" * 60)
-    logger.info("NC Commons Import Bot Starting")
-    logger.info("=" * 60)
-    logger.info(f"Configuration loaded from: {args.config}")
-
-    # Load credentials
-    credentials = load_credentials()
-    logger.info("Credentials loaded")
-
-    # Initialize database
-    database = Database(config["database"]["path"])
-
-    # Connect to NC Commons
-    nc_api = NCCommonsAPI(credentials["nc_username"], credentials["nc_password"])
-
-    # Determine which languages to process
-    if args.languages:
-        # Use languages from command line
-        languages = args.languages
-        logger.info(f"Processing {len(languages)} specified languages: {languages}")
-    else:
-        # Get all languages from NC Commons page
-        language_page = config["nc_commons"]["language_page"]
-        page_text = nc_api.get_page_text(language_page)
-        languages = parse_language_list(page_text)
-        logger.info(f"Processing {len(languages)} languages from {language_page}")
-
     # Process each language
     overall_stats = {
         "languages_processed": 0,
@@ -223,6 +206,45 @@ def main():
     logger.info(f"Pages modified: {overall_stats['total_pages_modified']}")
     logger.info(f"Total uploads: {overall_stats['total_uploads']}")
     logger.info(f"Errors: {overall_stats['total_errors']}")
+
+
+def main():
+    """Main entry point for the bot."""
+    # Parse command-line arguments
+    args = parse_command_line_args()
+
+    # Load configuration
+    with open(args.config, "r") as f:
+        config = yaml.safe_load(f)
+
+    # Setup logging
+    logging_config = config["logging"]
+    setup_logging(
+        logging_config.get("level", "INFO"),
+        logging_config.get("file", "./logs/bot.log"),
+        logging_config.get("max_bytes", 10485760),
+        logging_config.get("backup_count", 5),
+    )
+
+    logger = logging.getLogger(__name__)
+    logger.info("=" * 60)
+    logger.info("NC Commons Import Bot Starting")
+    logger.info("=" * 60)
+    logger.info(f"Configuration loaded from: {args.config}")
+
+    # Load credentials
+    credentials = load_credentials()
+    logger.info("Credentials loaded")
+
+    # Initialize database
+    database = Database(config["database"]["path"])
+
+    # Connect to NC Commons
+    nc_api = NCCommonsAPI(credentials["nc_username"], credentials["nc_password"])
+
+    languages = retrieve_language_list(args, config, nc_api)
+
+    process_languages(config, credentials, database, nc_api, languages)
 
     # Get overall database statistics
     db_stats = database.get_statistics()
