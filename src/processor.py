@@ -59,6 +59,8 @@ class PageProcessor:
         """
         logger.info(f"Processing page: {page_title}")
 
+        templates: list = []
+
         try:
             # Get page content
             page_text = self.wiki_api.get_page_text(page_title)
