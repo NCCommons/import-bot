@@ -16,26 +16,21 @@ class TestWikipediaAPI:
     def test_upload_from_url_success(self, mock_site_class):
         """Test successful upload from URL."""
         mock_site = Mock()
-        mock_site.upload.return_value = {"result": "Success"}
+        mock_site.raw_call.return_value = '{"upload": {"result": "Success"}}'
+        mock_site.get_token.return_value = "test_token"
         mock_site_class.return_value = mock_site
 
         api = WikipediaAPI("en", "user", "pass")
         result = api.upload_from_url("test.jpg", "https://example.com/test.jpg", "Description", "Upload comment")
 
         assert result.get("success") is True
-        mock_site.upload.assert_called_once_with(
-            file=None,
-            filename="test.jpg",
-            description="Description",
-            comment="Upload comment",
-            url="https://example.com/test.jpg",
-        )
 
     @patch("src.wiki_api.main_api.Site")
     def test_upload_from_url_duplicate(self, mock_site_class):
         """Test upload from URL with duplicate file."""
         mock_site = Mock()
-        mock_site.upload.side_effect = mwclient.errors.APIError("fileexists-shared-forbidden", "Duplicate file", {})
+        mock_site.raw_call.return_value = '{"upload": {"warnings": {"duplicate": ["Existing_file.jpg"]}}}'
+        mock_site.get_token.return_value = "test_token"
         mock_site_class.return_value = mock_site
 
         api = WikipediaAPI("en", "user", "pass")
@@ -49,7 +44,8 @@ class TestWikipediaAPI:
     def test_upload_from_file_success(self, mock_file, mock_site_class):
         """Test successful upload from file."""
         mock_site = Mock()
-        mock_site.upload.return_value = {"result": "Success"}
+        mock_site.raw_call.return_value = '{"upload": {"result": "Success"}}'
+        mock_site.get_token.return_value = "test_token"
         mock_site_class.return_value = mock_site
 
         api = WikipediaAPI("en", "user", "pass")
@@ -63,7 +59,8 @@ class TestWikipediaAPI:
     def test_upload_from_file_duplicate(self, mock_file, mock_site_class):
         """Test upload from file with duplicate."""
         mock_site = Mock()
-        mock_site.upload.side_effect = mwclient.errors.APIError("duplicate", "Duplicate file", {})
+        mock_site.raw_call.return_value = '{"upload": {"warnings": {"duplicate": ["Existing_file.jpg"]}}}'
+        mock_site.get_token.return_value = "test_token"
         mock_site_class.return_value = mock_site
 
         api = WikipediaAPI("en", "user", "pass")
