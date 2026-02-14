@@ -75,16 +75,16 @@ class TestFileUploader:
             assert record["error"] == "exists"
 
     @patch("urllib.request.urlretrieve")
-    @patch("tempfile.NamedTemporaryFile")
-    @patch("pathlib.Path.unlink")
+    @patch("src.uploader.TemporaryDownloadFile")
     def test_upload_via_download_success(
-        self, mock_unlink, mock_tempfile, mock_retrieve, uploader, mock_wiki_api, temp_db
+        self, mock_temp_class, mock_retrieve, uploader, mock_wiki_api, temp_db
     ):
         """Test successful upload via download method."""
-        # Setup temp file mock
+        # Setup temp file mock with context manager support
         mock_temp = Mock()
-        mock_temp.name = "/tmp/test123.tmp"
-        mock_tempfile.return_value = mock_temp
+        mock_temp.__enter__ = Mock(return_value="/tmp/test123.tmp")
+        mock_temp.__exit__ = Mock(return_value=None)
+        mock_temp_class.return_value = mock_temp
 
         mock_wiki_api.upload_from_file.return_value = {"success": True}
 
@@ -100,19 +100,19 @@ class TestFileUploader:
         # Verify upload was attempted
         mock_wiki_api.upload_from_file.assert_called_once()
 
-        # Verify cleanup
-        mock_unlink.assert_called_once()
+        # Verify cleanup was called (via __exit__)
+        mock_temp.__exit__.assert_called_once()
 
     @patch("urllib.request.urlretrieve")
-    @patch("tempfile.NamedTemporaryFile")
-    @patch("pathlib.Path.unlink")
+    @patch("src.uploader.TemporaryDownloadFile")
     def test_upload_via_download_exists(
-        self, mock_unlink, mock_tempfile, mock_retrieve, uploader, mock_wiki_api, temp_db
+        self, mock_temp_class, mock_retrieve, uploader, mock_wiki_api, temp_db
     ):
         """Test upload via download with exists file."""
         mock_temp = Mock()
-        mock_temp.name = "/tmp/test123.tmp"
-        mock_tempfile.return_value = mock_temp
+        mock_temp.__enter__ = Mock(return_value="/tmp/test123.tmp")
+        mock_temp.__exit__ = Mock(return_value=None)
+        mock_temp_class.return_value = mock_temp
 
         mock_wiki_api.upload_from_file.return_value = {"success": False, "error": "exists"}
 
@@ -121,18 +121,18 @@ class TestFileUploader:
         assert result is False
 
         # Still should clean up temp file
-        mock_unlink.assert_called_once()
+        mock_temp.__exit__.assert_called_once()
 
     @patch("urllib.request.urlretrieve")
-    @patch("tempfile.NamedTemporaryFile")
-    @patch("pathlib.Path.unlink")
+    @patch("src.uploader.TemporaryDownloadFile")
     def test_upload_via_download_cleanup_on_error(
-        self, mock_unlink, mock_tempfile, mock_retrieve, uploader, mock_wiki_api
+        self, mock_temp_class, mock_retrieve, uploader, mock_wiki_api
     ):
         """Test temp file cleanup on error."""
         mock_temp = Mock()
-        mock_temp.name = "/tmp/test123.tmp"
-        mock_tempfile.return_value = mock_temp
+        mock_temp.__enter__ = Mock(return_value="/tmp/test123.tmp")
+        mock_temp.__exit__ = Mock(return_value=None)
+        mock_temp_class.return_value = mock_temp
 
         mock_retrieve.side_effect = Exception("Download failed")
 
@@ -140,7 +140,7 @@ class TestFileUploader:
             uploader._upload_via_download("test.jpg", "https://example.com/test.jpg", "Description", "Comment", "en")
 
         # Should still clean up temp file
-        mock_unlink.assert_called_once()
+        mock_temp.__exit__.assert_called_once()
 
     def test_process_description_removes_categories(self, uploader, sample_config):
         """Test description processing removes categories."""

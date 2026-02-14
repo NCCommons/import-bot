@@ -6,14 +6,13 @@ to Wikipedia, with appropriate error handling and database recording.
 """
 
 import logging
-import tempfile
 import urllib.parse
 import urllib.request
-from pathlib import Path
 
-from src.database import Database
-from src.parsers import remove_categories
-from src.wiki_api import NCCommonsAPI, WikipediaAPI
+from .database import Database
+from .parsers import remove_categories
+from .wiki_api import NCCommonsAPI, WikipediaAPI
+from .utils.temporary_handler import TemporaryDownloadFile
 
 logger = logging.getLogger(__name__)
 
@@ -117,8 +116,6 @@ class FileUploader:
         Returns:
             True if successful, False if duplicate
         """
-        temp_file = None
-
         # Validate URL scheme
         parsed_url = urllib.parse.urlparse(url)
         if parsed_url.scheme != "https":
@@ -127,25 +124,17 @@ class FileUploader:
         # Download to temporary file
         logger.info(f"Downloading file: {filename}")
 
-        temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".tmp")
-        temp_path = temp_file.name
-        temp_file.close()
+        with TemporaryDownloadFile(suffix=".tmp") as temp_path:
+            urllib.request.urlretrieve(url, temp_path)
+            logger.debug(f"Downloaded to: {temp_path}")
 
-        urllib.request.urlretrieve(url, temp_path)
-        logger.debug(f"Downloaded to: {temp_path}")
-
-        # Upload from file
-        result = self.wiki_api.upload_from_file(
-            filename=filename,
-            filepath=temp_path,
-            description=description,
-            comment=comment,
-        )
-
-        # Clean up temporary file
-        if temp_file:
-            Path(temp_path).unlink(missing_ok=True)
-            logger.debug(f"Cleaned up temp file: {temp_path}")
+            # Upload from file
+            result = self.wiki_api.upload_from_file(
+                filename=filename,
+                filepath=temp_path,
+                description=description,
+                comment=comment,
+            )
 
         error = result.get("error")
         error_msg = str(error).lower()
