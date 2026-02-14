@@ -2,116 +2,11 @@
 Tests for wiki API module.
 """
 
-import time
 from unittest.mock import MagicMock, Mock, mock_open, patch
 
 import mwclient.errors
 import pytest
-from src.wiki_api import NCCommonsAPI, WikiAPI, WikipediaAPI, retry
-
-
-class TestRetryDecorator:
-    """Tests for retry decorator."""
-
-    def test_retry_succeeds_first_attempt(self):
-        """Test function succeeds on first attempt."""
-        call_count = 0
-
-        @retry(max_attempts=3, delay=0.01, backoff=2)
-        def successful_func():
-            nonlocal call_count
-            call_count += 1
-            return "success"
-
-        result = successful_func()
-
-        assert result == "success"
-        assert call_count == 1
-
-    def test_retry_succeeds_after_failures(self):
-        """Test function succeeds after some failures."""
-        call_count = 0
-
-        @retry(max_attempts=3, delay=0.01, backoff=2)
-        def eventually_succeeds():
-            nonlocal call_count
-            call_count += 1
-            if call_count < 3:
-                raise Exception("Temporary failure")
-            return "success"
-
-        result = eventually_succeeds()
-
-        assert result == "success"
-        assert call_count == 3
-
-    def test_retry_exhausts_attempts(self):
-        """Test all retry attempts are exhausted."""
-        call_count = 0
-
-        @retry(max_attempts=3, delay=0.01, backoff=2)
-        def always_fails():
-            nonlocal call_count
-            call_count += 1
-            raise Exception("Permanent failure")
-
-        with pytest.raises(Exception, match="Permanent failure"):
-            always_fails()
-
-        assert call_count == 3
-
-    def test_retry_exponential_backoff(self):
-        """Test exponential backoff timing."""
-        call_times = []
-
-        @retry(max_attempts=3, delay=0.05, backoff=2)
-        def track_timing():
-            call_times.append(time.time())
-            if len(call_times) < 3:
-                raise Exception("Retry")
-            return "done"
-
-        track_timing()
-
-        # Should have 3 calls
-        assert len(call_times) == 3
-
-        # Check delays (with tolerance for timing variance)
-        # First retry: ~0.05s delay
-        delay1 = call_times[1] - call_times[0]
-        assert 0.04 < delay1 < 0.1
-
-        # Second retry: ~0.1s delay (0.05 * 2)
-        delay2 = call_times[2] - call_times[1]
-        assert 0.08 < delay2 < 0.2
-
-    def test_retry_preserves_function_metadata(self):
-        """Test decorator preserves function metadata."""
-
-        @retry(max_attempts=3, delay=1, backoff=2)
-        def documented_func():
-            """Test docstring."""
-            pass
-
-        assert documented_func.__name__ == "documented_func"
-        assert documented_func.__doc__ == "Test docstring."
-
-    def test_retry_with_args_and_kwargs(self):
-        """Test retry works with function arguments."""
-        call_count = 0
-
-        @retry(max_attempts=3, delay=0.01, backoff=2)
-        def func_with_args(x, y, z=10):
-            nonlocal call_count
-            call_count += 1
-            if call_count < 2:
-                raise Exception("Retry")
-            return x + y + z
-
-        result = func_with_args(1, 2, z=3)
-
-        assert result == 6
-        assert call_count == 2
+from src.wiki_api import NCCommonsAPI, WikiAPI, WikipediaAPI
 
 
 class TestWikiAPI:

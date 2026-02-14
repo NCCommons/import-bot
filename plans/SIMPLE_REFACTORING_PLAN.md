@@ -125,13 +125,13 @@ class WikiAPI:
             logger.info(f"Logging in as {username}")
             self.site.login(username, password)
 
-    @retry(max_attempts=3)
+
     def get_page_text(self, title: str) -> str:
         """Get page content"""
         page = self.site.pages[title]
         return page.text()
 
-    @retry(max_attempts=3)
+
     def save_page(self, title: str, text: str, summary: str):
         """Save page content"""
         page = self.site.pages[title]
@@ -178,7 +178,7 @@ class WikipediaAPI(WikiAPI):
         logger.info(f"Found {len(pages)} pages")
         return pages
 
-    @retry(max_attempts=3)
+
     def upload_from_url(self, filename: str, url: str, description: str, comment: str) -> bool:
         """Upload file from URL"""
         try:
@@ -197,7 +197,7 @@ class WikipediaAPI(WikiAPI):
                 return False
             raise
 
-    @retry(max_attempts=3)
+
     def upload_from_file(self, filename: str, filepath: str, description: str, comment: str) -> bool:
         """Upload file from local path"""
         try:

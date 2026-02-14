@@ -11,8 +11,6 @@ import urllib.parse
 import urllib.request
 from pathlib import Path
 
-import mwclient
-
 from src.database import Database
 from src.parsers import remove_categories
 from src.wiki_api import NCCommonsAPI, WikipediaAPI

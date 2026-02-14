@@ -280,7 +280,6 @@ class WikiAPI:
             logger.info(f"Logging in as {username}")
             self.site.login(username, password)
 
-    @retry(max_attempts=3, delay=5, backoff=2)
     def get_page_text(self, title: str) -> str:
         """
         Get the text content of a page.
@@ -295,7 +294,6 @@ class WikiAPI:
         page = self.site.pages[title]
         return page.text()
 
-    @retry(max_attempts=3, delay=5, backoff=2)
     def save_page(self, title: str, text: str, summary: str):
         """
         Save content to a page.
@@ -327,7 +325,6 @@ class NCCommonsAPI(WikiAPI):
         """
         super().__init__('nccommons.org', username, password)
 
-    @retry(max_attempts=3, delay=5, backoff=2)
     def get_image_url(self, filename: str) -> str:
         """
         Get the direct URL to an image file.
@@ -381,7 +378,6 @@ class WikipediaAPI(WikiAPI):
         site = f'{language_code}.wikipedia.org'
         super().__init__(site, username, password)
 
-    @retry(max_attempts=3, delay=5, backoff=2)
     def get_pages_with_template(self, template: str, limit: int = 5000) -> List[str]:
         """
         Get all pages that transclude a template.
@@ -404,7 +400,6 @@ class WikipediaAPI(WikiAPI):
         logger.info(f"Found {len(pages)} pages")
         return pages
 
-    @retry(max_attempts=3, delay=5, backoff=2)
     def upload_from_url(self, filename: str, url: str, description: str, comment: str) -> bool:
         """
         Upload a file from URL to Wikipedia.
@@ -445,7 +440,6 @@ class WikipediaAPI(WikiAPI):
             logger.error(f"Upload failed: {e}")
             raise
 
-    @retry(max_attempts=3, delay=5, backoff=2)
     def upload_from_file(self, filename: str, filepath: str, description: str, comment: str) -> bool:
         """
         Upload a file from local filesystem to Wikipedia.

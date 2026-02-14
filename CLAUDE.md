@@ -54,7 +54,6 @@ bot.py (entry point)
 
 ### Key Patterns
 
-- **Retry with exponential backoff**: `@retry` decorator on all API calls
 - **Two-stage upload**: Try URL upload first, fall back to download-then-upload if disabled
 - **Dependency injection**: Components receive dependencies via constructor
 - **Context managers**: Safe database connection handling with auto-commit/rollback
