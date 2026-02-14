@@ -7,10 +7,10 @@ coordinating the upload of files and updating of page content.
 
 import logging
 
-from src.database import Database
-from src.parsers import extract_nc_templates
-from src.uploader import FileUploader
-from src.wiki_api import WikipediaAPI
+from .database import Database
+from .parsers import extract_nc_templates
+from .uploader import FileUploader
+from .wiki_api import WikipediaAPI
 
 logger = logging.getLogger(__name__)
 

@@ -6,14 +6,13 @@ to Wikipedia, with appropriate error handling and database recording.
 """
 
 import logging
-import tempfile
 import urllib.parse
 import urllib.request
-from pathlib import Path
 
-from src.database import Database
-from src.parsers import remove_categories
-from src.wiki_api import NCCommonsAPI, WikipediaAPI
+from .database import Database
+from .parsers import remove_categories
+from .wiki_api import NCCommonsAPI, WikipediaAPI
+from .utils.temporary_handler import TemporaryDownloadFile
 
 logger = logging.getLogger(__name__)
 
@@ -85,6 +84,7 @@ class FileUploader:
             description=description,
             comment=comment,
         )
+
         if result.get("success"):
             self.db.record_upload(filename, lang, "success")
             logger.info(f"Upload successful (URL method): {filename}")
@@ -94,7 +94,7 @@ class FileUploader:
         error_msg = result.get("error")
 
         if error_msg == "url_disabled":
-            logger.info(f"URL upload not allowed, trying file upload: {filename}")
+            logger.info("URL upload not allowed.")
             return self._upload_via_download(filename, file_url, description, comment, lang)
         else:
             logger.error(f"Upload failed for {filename}: {error_msg}")
@@ -117,45 +117,38 @@ class FileUploader:
         Returns:
             True if successful, False if duplicate
         """
-        temp_file = None
+        logger.info(f"Attempting file upload for {filename} after URL upload failed")
+        # Validate URL scheme
+        parsed_url = urllib.parse.urlparse(url)
+        if parsed_url.scheme != "https":
+            raise ValueError(f"Invalid URL scheme '{parsed_url.scheme}' for {filename}: only HTTPS is allowed")
 
-        try:
-            # Validate URL scheme
-            parsed_url = urllib.parse.urlparse(url)
-            if parsed_url.scheme != "https":
-                raise ValueError(f"Invalid URL scheme '{parsed_url.scheme}' for {filename}: only HTTPS is allowed")
+        # Download to temporary file
+        logger.info(f"Downloading file: {filename}")
 
-            # Download to temporary file
-            logger.info(f"Downloading file: {filename}")
-            temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".tmp")
-            temp_path = temp_file.name
-            temp_file.close()
-
+        with TemporaryDownloadFile(suffix=".tmp") as temp_path:
             urllib.request.urlretrieve(url, temp_path)
             logger.debug(f"Downloaded to: {temp_path}")
 
             # Upload from file
             result = self.wiki_api.upload_from_file(
-                filename=filename, filepath=temp_path, description=description, comment=comment
+                filename=filename,
+                filepath=temp_path,
+                description=description,
+                comment=comment,
             )
 
-            error = result.get("error")
-            error_msg = str(error).lower()
+        error = result.get("error", "unknown error")
+        error_msg = str(error).lower()
 
-            if result.get("success"):
-                self.db.record_upload(filename, language, "success")
-                logger.info(f"Upload successful (file method): {filename}")
-                return True
-            else:
-                logger.error(f"Upload failed for {filename}: {error_msg}")
-                self.db.record_upload(filename, language, "failed", error_msg)
-                return False
-
-        finally:
-            # Clean up temporary file
-            if temp_file:
-                Path(temp_path).unlink(missing_ok=True)
-                logger.debug(f"Cleaned up temp file: {temp_path}")
+        if result.get("success"):
+            self.db.record_upload(filename, language, "success")
+            logger.info(f"Upload successful (file method): {filename}")
+            return True
+        else:
+            logger.error(f"Upload failed for {filename}: {error_msg}")
+            self.db.record_upload(filename, language, "failed", error_msg)
+            return False
 
     def _process_description(self, description: str) -> str:
         """

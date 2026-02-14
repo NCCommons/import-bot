@@ -3,12 +3,12 @@
 import logging
 import time
 from functools import wraps
+from typing import Callable, Any
 
 logger = logging.getLogger(__name__)
 
 
-# Retry decorator implementation
-def retry(max_attempts: int = 3, delay: int = 5, backoff: int = 2):
+def retry(max_attempts: int = 3, delay: int = 5, backoff: int = 2) -> Callable:
     """
     Decorator to retry functions with exponential backoff.
 
@@ -21,9 +21,9 @@ def retry(max_attempts: int = 3, delay: int = 5, backoff: int = 2):
         Decorated function that retries on failure
     """
 
-    def decorator(func):
+    def decorator(func: Callable) -> Callable:
         @wraps(func)
-        def wrapper(*args, **kwargs):
+        def wrapper(*args, **kwargs) -> Any:
             attempt = 0
             current_delay = delay
 

@@ -6,15 +6,18 @@ This script tests the upload_from_url functionality directly using the Wikipedia
 
 import os
 import sys
+import urllib.request
 
 from dotenv import load_dotenv
+
 
 load_dotenv()  # Load environment variables from .env file
 # Add project root to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from src.logging_config import setup_logging
-from src.wiki_api import WikipediaAPI
+from src.logging_config import setup_logging  # noqa: E402
+from src.wiki_api import WikipediaAPI  # noqa: E402
+from src.utils.temporary_handler import TemporaryDownloadFile  # noqa: E402
 
 setup_logging(
     "INFO",
@@ -48,14 +51,14 @@ def main():
     # Get credentials from environment variables
     username = os.environ.get("WIKIPEDIA_USERNAME")
     password = os.environ.get("WIKIPEDIA_PASSWORD")
-    lang = os.environ.get("WIKI_LANG", "af")
+    lang = os.environ.get("WIKI_LANG", "test")
 
     if not username or not password:
         print("Error: Please set WIKIPEDIA_USERNAME and WIKIPEDIA_PASSWORD environment variables")
         print("Example:")
         print("  set WIKIPEDIA_USERNAME=YourBotUsername")
         print("  set WIKIPEDIA_PASSWORD=YourBotPassword")
-        print("  set WIKI_LANG=af")
+        print("  set WIKI_LANG=..")
         sys.exit(1)
 
     print(f"Connecting to {lang}.wikipedia.org...")
@@ -85,9 +88,32 @@ def main():
 
     if result.get("success"):
         print("✓ Upload successful!")
+        target_filename = target_filename.replace("File:", "").replace(" ", "_")
         print(f"File uploaded to: https://{lang}.wikipedia.org/wiki/File:{target_filename}")
+        return True
+
+    # URL upload not allowed or failed, try file upload
+    error_msg = result.get("error")
+
+    if error_msg == "url_disabled":
+        print(f"URL upload not allowed, trying file upload: {target_filename}")
+
+        with TemporaryDownloadFile(suffix=".tmp") as temp_path:
+            urllib.request.urlretrieve(image_url, temp_path)
+            print(f"Downloaded to: {temp_path}")
+
+            # Upload from file
+            result = wiki_api.upload_from_file(
+                filename=target_filename,
+                filepath=temp_path,
+                description=description,
+                comment=comment,
+            )
+            if result.get("success"):
+                print("✓ Upload successful via file upload!")
+                print(f"File uploaded to: https://{lang}.wikipedia.org/wiki/File:{target_filename}")
     else:
-        print(f"✗ Upload failed: {result.get('error')}")
+        print(f"✗ Upload failed: {error_msg}")
 
 
 if __name__ == "__main__":
