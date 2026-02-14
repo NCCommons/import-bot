@@ -83,7 +83,7 @@ class FileUploader:
             filename=filename,
             url=file_url,
             description=description,
-            comment=comment
+            comment=comment,
         )
         if result.get("success"):
             self.db.record_upload(filename, lang, "success")

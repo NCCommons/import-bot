@@ -3,6 +3,7 @@ Tests for wiki API module.
 """
 
 from unittest.mock import MagicMock, Mock, patch
+
 from src.wiki_api import WikiAPI
 
 

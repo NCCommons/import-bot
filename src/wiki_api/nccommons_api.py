@@ -6,6 +6,7 @@ through the MediaWiki API.
 """
 
 import logging
+
 from .main_api import WikiAPI
 
 logger = logging.getLogger(__name__)

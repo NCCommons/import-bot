@@ -7,6 +7,7 @@ through the MediaWiki API.
 
 import logging
 from typing import List
+
 from .main_api import WikiAPI
 
 logger = logging.getLogger(__name__)
@@ -69,7 +70,7 @@ class WikipediaAPI(WikiAPI):
         """
         logger.info(f"Uploading from URL: {filename}")
 
-        result = self.upload(self.site, file=None, filename=filename, description=description, comment=comment, url=url)
+        result = self.upload(file=None, filename=filename, description=description, comment=comment, url=url)
 
         if result.get("success"):
             logger.info(f"Upload successful: {filename}")
@@ -92,7 +93,7 @@ class WikipediaAPI(WikiAPI):
         logger.info(f"Uploading from file: {filename}")
 
         with open(filepath, "rb") as f:
-            result = self.upload(self.site, file=f, filename=filename, description=description, comment=comment)
+            result = self.upload(file=f, filename=filename, description=description, comment=comment)
 
         if result.get("success"):
             logger.info(f"Upload successful: {filename}")

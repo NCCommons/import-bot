@@ -6,13 +6,15 @@ This script tests the upload_from_url functionality directly using the Wikipedia
 
 import os
 import sys
+
 from dotenv import load_dotenv
+
 load_dotenv()  # Load environment variables from .env file
 # Add project root to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from src.wiki_api import WikipediaAPI
 from src.logging_config import setup_logging
+from src.wiki_api import WikipediaAPI
 
 setup_logging(
     "INFO",
@@ -66,7 +68,7 @@ def main():
     wiki_api = WikipediaAPI(
         language_code=lang,
         username=username,
-        password=password
+        password=password,
     )
 
     print("Connected successfully!")
@@ -78,7 +80,7 @@ def main():
         filename=target_filename,
         url=image_url,
         description=description,
-        comment=comment
+        comment=comment,
     )
 
     if result.get("success"):
