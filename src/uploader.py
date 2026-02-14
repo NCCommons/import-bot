@@ -136,17 +136,20 @@ class FileUploader:
             logger.debug(f"Downloaded to: {temp_path}")
 
             # Upload from file
-            success = self.wiki_api.upload_from_file(
+            result = self.wiki_api.upload_from_file(
                 filename=filename, filepath=temp_path, description=description, comment=comment
             )
 
-            if success:
+            error = result.get("error")
+            error_msg = str(error).lower()
+
+            if result.get("success"):
                 self.db.record_upload(filename, language, "success")
                 logger.info(f"Upload successful (file method): {filename}")
                 return True
             else:
-                # Duplicate
-                self.db.record_upload(filename, language, "duplicate")
+                logger.error(f"Upload failed for {filename}: {error_msg}")
+                self.db.record_upload(filename, language, "failed", error_msg)
                 return False
 
         finally:

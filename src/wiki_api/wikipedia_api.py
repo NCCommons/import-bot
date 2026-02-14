@@ -94,7 +94,7 @@ class WikipediaAPI(WikiAPI):
             logger.error(f"Upload failed: {e}")
             return {"success": False, "error": str(e)}
 
-    def upload_from_file(self, filename: str, filepath: str, description: str, comment: str) -> bool:
+    def upload_from_file(self, filename: str, filepath: str, description: str, comment: str) -> dict:
         """
         Upload a file from local filesystem to Wikipedia.
 
@@ -117,14 +117,14 @@ class WikipediaAPI(WikiAPI):
                 result = self.site.upload(file=f, filename=filename, description=description, comment=comment)
 
             logger.info(f"Upload successful: {filename}")
-            return True
+            return {"success": True}
 
         except mwclient.errors.APIError as e:
             error_msg = str(e).lower()
 
             if "duplicate" in error_msg:
                 logger.warning(f"File is duplicate: {filename}")
-                return False
+                return {"success": False, "error": "duplicate"}
 
             logger.error(f"Upload failed: {e}")
-            raise
+            return {"success": False, "error": str(e)}

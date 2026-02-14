@@ -115,7 +115,7 @@ class TestWikipediaAPI:
         api = WikipediaAPI("en", "user", "pass")
         result = api.upload_from_file("test.jpg", "/tmp/test.jpg", "Description", "Comment")
 
-        assert result is True
+        assert result.get("success") is True
         mock_file.assert_called_once_with("/tmp/test.jpg", "rb")
 
     @patch("src.wiki_api.main_api.Site")
@@ -130,4 +130,4 @@ class TestWikipediaAPI:
 
         result = api.upload_from_file("test.jpg", "/tmp/test.jpg", "Description", "Comment")
 
-        assert result is False
+        assert result.get("success") is False
