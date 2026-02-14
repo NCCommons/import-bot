@@ -33,11 +33,6 @@ class WikiAPI(UploadHandler):
             password: Optional password for login
         """
         logger.info(f"Connecting to {site}")
-        try:
-            self.site = Site(site)
-        except Exception as e:
-            logger.error(f"Failed to connect to {site}: {e}")
-            raise
         self.login_done = False
         self.username = username
         self.password = password
@@ -46,6 +41,16 @@ class WikiAPI(UploadHandler):
             # XOR case: exactly one of username/password is provided
             logger.warning("Both username and password are required for login; skipping login")
             return
+
+        try:
+            self.site = Site(
+                site,
+                clients_useragent="NC Commons Import Bot/1.0 (https://github.com/your/repo)",
+                force_login=True,
+            )
+        except Exception as e:
+            logger.error(f"Failed to connect to {site}: {e}")
+            raise
 
         super().__init__(self.site)
 
@@ -56,9 +61,16 @@ class WikiAPI(UploadHandler):
         try:
             logger.info(f"Logging in as {self.username}")
             self.site.login(self.username, self.password)
-            self.login_done = True
+            self.login_done = self.site.logged_in
         except mwclient.errors.LoginError as e:
+            if "BotPasswordSessionProvider" in str(e):
+                self.site.clientlogin(None, {"username": self.username, "password": self.password})
+                self.login_done = self.site.logged_in
+
             logger.exception(f"Login failed for {self.username}: {e}")
+
+        if self.login_done:
+            logger.info(f"Login successful for {self.username}")
 
     def get_page_text(self, title: str) -> str:
         """
