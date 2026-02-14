@@ -260,11 +260,7 @@ def safe_main():
         logger = logging.getLogger(__name__)
         logger.info("Bot interrupted by user")
         return 130
-    except Exception as e:
-        logger = logging.getLogger(__name__)
-        logger.exception(f"Fatal error: {e}")
-        return 1
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    sys.exit(safe_main())
