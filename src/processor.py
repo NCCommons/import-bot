@@ -95,16 +95,17 @@ class PageProcessor:
 
         for template in templates:
             logger.info(f"Processing file: {template.filename}")
-            # first check if file already exists to avoid unnecessary uploads
-            if self.wiki_api.file_exists(template.filename):
-                files_changed += 1
-                files_exists += 1
-                # Map original template to file syntax
-                replacements[template.original_text] = template.to_file_syntax()
-                logger.info(f"File already exists: {template.filename}")
-                continue
 
             try:
+                # first check if file already exists to avoid unnecessary uploads
+                if self.wiki_api.file_exists(template.filename):
+                    files_changed += 1
+                    files_exists += 1
+                    # Map original template to file syntax
+                    replacements[template.original_text] = template.to_file_syntax()
+                    logger.info(f"File already exists: {template.filename}")
+                    continue
+
                 # Upload file
                 result = self.uploader.upload_file(template.filename)
 
