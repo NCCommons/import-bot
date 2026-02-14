@@ -80,6 +80,7 @@ def mock_wiki_api():
     api.save_page.return_value = None
     api.upload_from_url.return_value = {"success": True}
     api.upload_from_file.return_value = {"success": True}
+    api.file_exists.return_value = False  # Files don't exist by default
 
     return api
 
