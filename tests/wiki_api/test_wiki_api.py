@@ -4,7 +4,6 @@ Tests for wiki API module.
 
 from unittest.mock import MagicMock, Mock, patch
 
-import mwclient.errors
 import pytest
 from src.wiki_api import WikiAPI
 
@@ -91,7 +90,7 @@ class TestWikiAPI:
     @pytest.mark.skip(reason="mwclient.errors.LoginError is difficult to instantiate properly")
     def test_ensure_logged_in_failure(self):
         """Test login failure handling - skipped due to LoginError complexity."""
-        pass
+        pass  # noqa: PIE790
 
     @patch("src.wiki_api.main_api.Site")
     def test_save_page_not_logged_in(self, mock_site_class):

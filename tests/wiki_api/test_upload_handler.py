@@ -3,7 +3,7 @@ Tests for wiki API module.
 """
 
 from io import BytesIO
-from unittest.mock import MagicMock, Mock, mock_open, patch
+from unittest.mock import Mock, mock_open, patch
 
 import mwclient.errors
 import pytest
@@ -274,7 +274,7 @@ class TestMwclientUpload:
         """Test upload with file path."""
         # This test is complex to mock due to file operations
         # The functionality is covered by test_upload_from_file_success
-        pass
+        pass  # noqa: PIE790
 
     def test_file_upload_with_file_object(self):
         """Test upload with file-like object."""
