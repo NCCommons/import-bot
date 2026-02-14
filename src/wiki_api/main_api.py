@@ -58,8 +58,7 @@ class WikiAPI(UploadHandler):
             self.site.login(self.username, self.password)
             self.login_done = True
         except mwclient.errors.LoginError as e:
-            logger.error(f"Login failed for {self.username}: {e}")
-            return False
+            logger.exception(f"Login failed for {self.username}: {e}")
 
     def get_page_text(self, title: str) -> str:
         """

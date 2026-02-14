@@ -34,13 +34,7 @@ class InsufficientPermission(Exception):
     pass
 
 
-class UploadError(APIError):
-    """Raised when an upload operation fails."""
-
-    pass
-
-
-class UploadByUrlDisabledError(APIError):
+class UploadByUrlDisabledError(Exception):
     """
     Raised when URL upload is disabled for a file.
     {'error': {'code': 'copyuploaddisabled', 'info': 'Upload by URL disabled.', '*': ''}}

@@ -13,7 +13,10 @@ import mwclient
 from mwclient.client import Site
 
 from .api_errors import (
-    UploadError, FileExistsError, UploadByUrlDisabledError, InsufficientPermission, DuplicateFileError,
+    FileExistsError,
+    UploadByUrlDisabledError,
+    InsufficientPermission,
+    DuplicateFileError,
 )
 
 logger = logging.getLogger(__name__)
@@ -50,23 +53,24 @@ class UploadHandler:
 
         # Handle standard API error envelope
         if "error" in info:
-            logger.error(f"API error: {info['error']}")
             code = info["error"].get("code", "")
-            info = info["error"].get("info", "")
+            err_info = info["error"].get("info", "")
+
+            logger.error(f"API error: {info}")
 
             # {'error': {'code': 'copyuploaddisabled', 'info': 'Upload by URL disabled.', '*': ''}}
-            if code == "copyuploaddisabled" or "upload by url disabled" in info.lower():
+            if code == "copyuploaddisabled" or "upload by url disabled" in err_info.lower():
                 raise UploadByUrlDisabledError()
 
             # Rate limit surface for caller
             if code in {"ratelimited", "throttled"} or "rate" in code:
-                raise Exception("ratelimited: " + info)
+                raise Exception("ratelimited: " + err_info)
 
             # Permission issues
             if code in {"permissiondenied", "badtoken", "mwoauth-invalid-authorization"}:
                 raise InsufficientPermission()
 
-            raise Exception(f"upload error: {code}: {info}")
+            raise Exception(f"upload error: {code}: {err_info}")
 
         upload = info.get("upload", {})
         result = upload.get("result")
@@ -104,19 +108,8 @@ class UploadHandler:
 
         if comment is None:
             comment = description
-            text = None
-        else:
-            comment = comment
-            text = description
 
-        if file is not None:
-            if not hasattr(file, "read"):
-                file = open(file, "rb")
-
-            # Narrowing the type of file from Union[str, BinaryIO, None]
-            # to BinaryIO, since we know it's not a str at this point.
-            file = cast(BinaryIO, file)
-            file.seek(0)
+        text = description
 
         predata = {
             "action": "upload",
@@ -130,8 +123,18 @@ class UploadHandler:
             predata["url"] = url
 
         postdata = predata
+
         files = None
+
         if file is not None:
+            if not hasattr(file, "read"):
+                file = open(file, "rb")
+
+            # Narrowing the type of file from Union[str, BinaryIO, None]
+            # to BinaryIO, since we know it's not a str at this point.
+            file = cast(BinaryIO, file)
+            file.seek(0)
+
             # Workaround for https://github.com/mwclient/mwclient/issues/65
             # ----------------------------------------------------------------
             # Since the filename in Content-Disposition is not interpreted,
@@ -144,6 +147,11 @@ class UploadHandler:
 
         if not info:
             info = {}
+
+        if "for notice of API deprecations and breaking changes." in info.get("error", {}).get("*", ""):
+            info["error"]["*"]= ""
+
+        response = info
 
         if self.handle_api_result(info, kwargs=predata):
             response = info.get("upload", {})
@@ -170,7 +178,7 @@ class UploadHandler:
 
         try:
             logger.info(f"Uploading file: {filename}")
-            response = self.mwclient_upload(
+            _response = self.mwclient_upload(
                 file=file,
                 filename=filename,
                 description=description,
@@ -196,10 +204,11 @@ class UploadHandler:
             logger.warning(f"URL upload disabled in {self.site.host}")
             return {"success": False, "error": "url_disabled"}
 
-        except (mwclient.errors.APIError, UploadError) as e:
+        except mwclient.errors.APIError as e:
             error_msg = str(e)
             logger.error(f"Upload failed: {error_msg}")
             return {"success": False, "error": error_msg}
+
         except Exception as e:
             logger.error(f"Unexpected error during upload: {e}")
             return {"success": False, "error": str(e)}
