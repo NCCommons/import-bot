@@ -51,14 +51,14 @@ def main():
     # Get credentials from environment variables
     username = os.environ.get("WIKIPEDIA_USERNAME")
     password = os.environ.get("WIKIPEDIA_PASSWORD")
-    lang = os.environ.get("WIKI_LANG", "af")
+    lang = os.environ.get("WIKI_LANG", "test")
 
     if not username or not password:
         print("Error: Please set WIKIPEDIA_USERNAME and WIKIPEDIA_PASSWORD environment variables")
         print("Example:")
         print("  set WIKIPEDIA_USERNAME=YourBotUsername")
         print("  set WIKIPEDIA_PASSWORD=YourBotPassword")
-        print("  set WIKI_LANG=af")
+        print("  set WIKI_LANG=..")
         sys.exit(1)
 
     print(f"Connecting to {lang}.wikipedia.org...")
