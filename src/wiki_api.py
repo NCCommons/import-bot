@@ -34,12 +34,16 @@ class WikiAPI:
         logger.info(f"Connecting to {site}")
         self.site = Site(site)
 
-        if username and password:
-            logger.info(f"Logging in as {username}")
-            self.site.login(username, password)
-        elif bool(username) != bool(password):
+        if not username or not password:
             # XOR case: exactly one of username/password is provided
             logger.warning("Both username and password are required for login; skipping login")
+            return
+        try:
+            logger.info(f"Logging in as {username}")
+            self.site.login(username, password)
+        except mwclient.errors.LoginError as e:
+            logger.error(f"Login failed for {username}: {e}")
+            raise
 
     def get_page_text(self, title: str) -> str:
         """
