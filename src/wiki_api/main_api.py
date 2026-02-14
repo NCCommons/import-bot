@@ -64,10 +64,10 @@ class WikiAPI(UploadHandler):
             self.login_done = self.site.logged_in
         except mwclient.errors.LoginError as e:
             if "BotPasswordSessionProvider" in str(e):
-                self.site.clientlogin(None, {"username": self.username, "password": self.password})
+                self.site.clientlogin(None, username=self.username, password=self.password)
                 self.login_done = self.site.logged_in
-
-            logger.exception(f"Login failed for {self.username}: {e}")
+            else:
+                logger.exception(f"Login failed for {self.username}: {e}")
 
         if self.login_done:
             logger.info(f"Login successful for {self.username}")

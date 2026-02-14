@@ -94,7 +94,7 @@ class FileUploader:
         error_msg = result.get("error")
 
         if error_msg == "url_disabled":
-            logger.info(f"URL upload not allowed, trying file upload: {filename}")
+            logger.info("URL upload not allowed.")
             return self._upload_via_download(filename, file_url, description, comment, lang)
         else:
             logger.error(f"Upload failed for {filename}: {error_msg}")
@@ -117,6 +117,7 @@ class FileUploader:
         Returns:
             True if successful, False if duplicate
         """
+        logger.info(f"Attempting file upload for {filename} after URL upload failed")
         # Validate URL scheme
         parsed_url = urllib.parse.urlparse(url)
         if parsed_url.scheme != "https":
