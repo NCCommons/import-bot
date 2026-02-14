@@ -181,7 +181,7 @@ class UploadHandler:
             return {"success": True}
 
         except DuplicateFileError as e:
-            logger.warning(f"Duplicate file detected: {e.filename} is a duplicate of {e.duplicate_name}")
+            logger.warning(f"Duplicate file detected: {e.file_name} is a duplicate of {e.duplicate_name}")
             return {"success": False, "error": "duplicate", "duplicate_of": e.duplicate_name}
 
         except FileExistsError as e:
