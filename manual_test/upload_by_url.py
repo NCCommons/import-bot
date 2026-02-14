@@ -15,23 +15,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from src.wiki_api import WikipediaAPI
 from src.logging_config import setup_logging
 
-# Test image URL from NC Commons
-image_url = "https://nccommons.org/m/a/ae/President_Jacbo_Zuma_attends_The_New_Age_and_SABC_Business_briefing%2C_16_Mar_2012.jpg"
-
-# Target filename on Wikipedia
-target_filename = "President Jacbo Zuma attends The New Age and SABC Business briefing, 16 Mar 2012.jpg"
-
-# File description (wikitext)
-description = """== Summary ==
-President Jacob Zuma attends The New Age and SABC Business briefing, 16 Mar 2012.
-
-== Licensing ==
-{{NC Commons license}}
-
-[[Category:Imported from NC Commons]]"""
-
-# Upload comment
-comment = "Test upload from NC Commons via URL"
+logging.getLogger("mwclient").setLevel(logging.DEBUG)  # Set mwclient to debug for detailed API interaction logs
 
 setup_logging(
     "INFO",
@@ -40,10 +24,27 @@ setup_logging(
     5,
 )
 
-logging.getLogger("mwclient").setLevel(logging.DEBUG)  # Set mwclient to debug for detailed API interaction logs
-
 
 def main():
+
+    # Test image URL from NC Commons
+    image_url = "https://nccommons.org/m/a/ae/President_Jacbo_Zuma_attends_The_New_Age_and_SABC_Business_briefing%2C_16_Mar_2012.jpg"
+
+    # Target filename on Wikipedia
+    target_filename = "President Jacbo Zuma attends The New Age and SABC Business briefing, 16 Mar 2012.jpg"
+
+    # File description (wikitext)
+    description = """== Summary ==
+    President Jacob Zuma attends The New Age and SABC Business briefing, 16 Mar 2012.
+
+    == Licensing ==
+    {{NC Commons license}}
+
+    [[Category:Imported from NC Commons]]"""
+
+    # Upload comment
+    comment = "Test upload from NC Commons via URL"
+
     """Run the upload test."""
     # Get credentials from environment variables
     username = os.environ.get("WIKIPEDIA_USERNAME")
