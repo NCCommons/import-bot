@@ -12,7 +12,9 @@ from typing import Any, BinaryIO, Dict, Optional, Union, cast
 import mwclient
 from mwclient.client import Site
 
-from .api_errors import UploadError, FileExistsError, UploadByUrlDisabledError, InsufficientPermission
+from .api_errors import (
+    UploadError, FileExistsError, UploadByUrlDisabledError, InsufficientPermission, DuplicateFileError,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -75,7 +77,12 @@ class UploadHandler:
 
         # Warnings handling
         warnings = upload.get("warnings", {})
-        if "exists" in warnings or "duplicate" in warnings:
+
+        duplicate = warnings.get("duplicate", [""])[0].replace("_", " ")
+        if duplicate:
+            raise DuplicateFileError(kwargs.get("filename", ""), duplicate)
+
+        if "exists" in warnings:
             raise FileExistsError(kwargs.get("filename", ""))
 
         return True
@@ -159,6 +166,8 @@ class UploadHandler:
         Returns:
             Dictionary with 'success' key indicating result and optional 'error' key for error details
         """
+        filename = filename.removeprefix("File:")  # Ensure filename does not have 'File:' prefix
+
         try:
             logger.info(f"Uploading file: {filename}")
             response = self.mwclient_upload(
@@ -171,9 +180,13 @@ class UploadHandler:
             logger.info(f"Upload successful: {filename}")
             return {"success": True}
 
+        except DuplicateFileError as e:
+            logger.warning(f"Duplicate file detected: {e.filename} is a duplicate of {e.duplicate_name}")
+            return {"success": False, "error": "duplicate", "duplicate_of": e.duplicate_name}
+
         except FileExistsError as e:
             logger.warning(f"File already exists: {e.file_name}")
-            return {"success": False, "error": "duplicate"}
+            return {"success": False, "error": "exists"}
 
         except InsufficientPermission:
             logger.error(f"Insufficient permissions to upload the file for user {self.site.username} on {self.site.host}")

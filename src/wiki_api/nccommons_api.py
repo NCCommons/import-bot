@@ -42,7 +42,7 @@ class NCCommonsAPI(WikiAPI):
         Raises:
             FileNotFoundError: If the file does not exist or has no imageinfo
         """
-        if not filename.startswith("File:"):
+        if not filename.lower().startswith("file:"):
             filename = f"File:{filename}"
 
         logger.debug(f"Getting image URL for: {filename}")
@@ -69,7 +69,7 @@ class NCCommonsAPI(WikiAPI):
         Returns:
             File description page wikitext
         """
-        if not filename.startswith("File:"):
+        if not filename.lower().startswith("file:"):
             filename = f"File:{filename}"
 
         return self.get_page_text(filename)
