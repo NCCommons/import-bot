@@ -21,7 +21,7 @@ class TestWikiAPI:
 
         mock_site_class.assert_called_once_with(
             "test.wikipedia.org",
-            clients_useragent="NC Commons Import Bot/1.0 (https://github.com/your/repo)",
+            clients_useragent="NC Commons Import Bot/1.0 (https://github.com/NCCommons)",
             force_login=True,
         )
         assert api.site == mock_site

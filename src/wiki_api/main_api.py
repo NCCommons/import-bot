@@ -45,7 +45,7 @@ class WikiAPI(UploadHandler):
         try:
             self.site = Site(
                 site,
-                clients_useragent="NC Commons Import Bot/1.0 (https://github.com/your/repo)",
+                clients_useragent="NC Commons Import Bot/1.0 (https://github.com/NCCommons)",
                 force_login=True,
             )
         except Exception as e:
@@ -135,6 +135,6 @@ class WikiAPI(UploadHandler):
 
         if not self.login_done:
             logger.error("Cannot save page without successful login")
-            return False
+            return {"success": False, "error": "login_required"}
 
         return self.upload_wrap(file=file, filename=filename, description=description, comment=comment, url=url)

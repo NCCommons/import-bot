@@ -19,7 +19,7 @@ class TestWikipediaAPI:
 
         mock_site_class.assert_called_once_with(
             "en.wikipedia.org",
-            clients_useragent="NC Commons Import Bot/1.0 (https://github.com/your/repo)",
+            clients_useragent="NC Commons Import Bot/1.0 (https://github.com/NCCommons)",
             force_login=True,
         )
         assert api.lang == "en"
@@ -34,7 +34,7 @@ class TestWikipediaAPI:
 
         mock_site_class.assert_called_once_with(
             "ar.wikipedia.org",
-            clients_useragent="NC Commons Import Bot/1.0 (https://github.com/your/repo)",
+            clients_useragent="NC Commons Import Bot/1.0 (https://github.com/NCCommons)",
             force_login=True,
         )
         assert api.lang == "ar"

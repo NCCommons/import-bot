@@ -129,7 +129,11 @@ def process_language(
     return stats
 
 
-def retrieve_language_list(args, language_page, nc_api):
+def retrieve_language_list(
+    args,
+    language_page,
+    nc_api: NCCommonsAPI,
+):
     logger = logging.getLogger(__name__)
     languages = {}
     # Determine which languages to process
@@ -170,7 +174,10 @@ def parse_command_line_args():
     return args
 
 
-def process_languages(config, credentials, database, nc_api, languages):
+def process_languages(
+    config, credentials, database, nc_api: NCCommonsAPI,
+    languages,
+):
 
     logger = logging.getLogger(__name__)
     # Process each language

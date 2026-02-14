@@ -94,7 +94,7 @@ class UploadHandler:
 
     def mwclient_upload(
         self,
-        file: Union[str, BinaryIO, None] = None,
+        file: Union[BinaryIO, None] = None,
         filename: Optional[str] = None,
         description: str = "",
         url: Optional[str] = None,
@@ -128,7 +128,7 @@ class UploadHandler:
         files = None
 
         if file is not None:
-            # Narrowing the type of file from Union[str, BinaryIO, None]
+            # Narrowing the type of file from Union[BinaryIO, None]
             # to BinaryIO, since we know it's not a str at this point.
             file = cast(BinaryIO, file)
             file.seek(0)
@@ -162,7 +162,7 @@ class UploadHandler:
 
     def upload_wrap(
         self,
-        file: str | BinaryIO | None,
+        file: BinaryIO | None,
         filename: str,
         description: str,
         comment: str,

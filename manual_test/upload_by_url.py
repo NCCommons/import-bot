@@ -112,10 +112,8 @@ def main():
             if result.get("success"):
                 print("✓ Upload successful via file upload!")
                 print(f"File uploaded to: https://{lang}.wikipedia.org/wiki/File:{target_filename}")
-                return True
     else:
         print(f"✗ Upload failed: {error_msg}")
-        return False
 
 
 if __name__ == "__main__":
