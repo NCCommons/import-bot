@@ -305,3 +305,63 @@ class TestPageProcessor:
 
         # Should still have file syntax, even with empty caption
         assert "[[File:test.jpg|thumb|]]" in saved_text
+
+    def test_process_page_duplicate_file_uses_existing_filename(self, processor, mock_wiki_api, temp_db):
+        """Test that duplicate file uses the existing file's name in page update."""
+        page_text = "Text before\n{{NC|new_file.jpg|My caption}}\nText after"
+
+        mock_wiki_api.get_page_text.return_value = page_text
+        mock_wiki_api.lang = "en"
+        # Simulate duplicate with different filename
+        processor.uploader.upload_file.return_value = {"success": False, "error": "duplicate", "duplicate_of": "existing_file.jpg"}
+
+        result = processor.process_page("Test Page")
+
+        assert result is True  # Page should be updated
+
+        # Check the saved text uses the duplicate filename
+        call_args = mock_wiki_api.save_page.call_args
+        saved_text = call_args[0][1]
+
+        # Should use the existing (duplicate) filename
+        assert "[[File:existing_file.jpg|thumb|My caption]]" in saved_text
+        assert "{{NC|new_file.jpg|My caption}}" not in saved_text
+
+        # Verify page record shows file was processed
+        with temp_db._get_connection() as conn:
+            record = conn.execute("SELECT * FROM pages WHERE page_title='Test Page'").fetchone()
+            assert record["templates_found"] == 1
+            assert record["files_uploaded"] == 1  # Counted as uploaded (using existing)
+
+    def test_process_page_mixed_upload_and_duplicate(self, processor, mock_wiki_api, temp_db):
+        """Test page with both successful uploads and duplicates."""
+        page_text = """
+        {{NC|new_file.jpg|New caption}}
+        {{NC|dup_file.jpg|Dup caption}}
+        """
+
+        mock_wiki_api.get_page_text.return_value = page_text
+        mock_wiki_api.lang = "en"
+        # First upload succeeds, second is duplicate
+        processor.uploader.upload_file.side_effect = [
+            {"success": True},
+            {"success": False, "error": "duplicate", "duplicate_of": "existing.jpg"}
+        ]
+
+        result = processor.process_page("Test Page")
+
+        assert result is True
+
+        # Check the saved text
+        call_args = mock_wiki_api.save_page.call_args
+        saved_text = call_args[0][1]
+
+        # Both should be replaced with correct filenames
+        assert "[[File:new_file.jpg|thumb|New caption]]" in saved_text
+        assert "[[File:existing.jpg|thumb|Dup caption]]" in saved_text
+
+        # Verify both counted as uploaded
+        with temp_db._get_connection() as conn:
+            record = conn.execute("SELECT * FROM pages WHERE page_title='Test Page'").fetchone()
+            assert record["templates_found"] == 2
+            assert record["files_uploaded"] == 2
