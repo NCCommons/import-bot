@@ -68,50 +68,52 @@ class FileUploader:
             logger.info(f"File already uploaded: {filename}")
             return False
 
+        # try:
+        # Get file information from NC Commons
+        logger.info(f"Fetching file from NC Commons: {filename}")
+        file_url = self.nc_api.get_image_url(filename)
+        description = self.nc_api.get_file_description(filename)
+
+        # Process description
+        description = self._process_description(description)
+
+        # Upload comment from config
+        comment = self.config["wikipedia"]["upload_comment"]
+
+        # Try URL upload first (faster, doesn't require download)
         try:
-            # Get file information from NC Commons
-            logger.info(f"Fetching file from NC Commons: {filename}")
-            file_url = self.nc_api.get_image_url(filename)
-            description = self.nc_api.get_file_description(filename)
+            success = self.wiki_api.upload_from_url(
+                filename=filename, url=file_url, description=description, comment=comment
+            )
 
-            # Process description
-            description = self._process_description(description)
+            if success:
+                self.db.record_upload(filename, lang, "success")
+                logger.info(f"Upload successful (URL method): {filename}")
+                return True
+            else:
+                # Duplicate file
+                self.db.record_upload(filename, lang, "duplicate")
+                return False
 
-            # Upload comment from config
-            comment = self.config["wikipedia"]["upload_comment"]
+        except Exception as url_error:
+            # URL upload not allowed or failed, try file upload
+            error_msg = str(url_error).lower()
 
-            # Try URL upload first (faster, doesn't require download)
-            try:
-                success = self.wiki_api.upload_from_url(
-                    filename=filename, url=file_url, description=description, comment=comment
-                )
+            #  TODO: find the specific error message for copyupload
+            if "copyupload" in error_msg:
+                logger.info(f"URL upload not allowed, trying file upload: {filename}")
+                return self._upload_via_download(filename, file_url, description, comment, lang)
+            else:
+                error_msg = self._format_error(url_error)
+                logger.error(f"Upload failed for {filename}: {error_msg}")
+                self.db.record_upload(filename, lang, "failed", error_msg)
+                return False
 
-                if success:
-                    self.db.record_upload(filename, lang, "success")
-                    logger.info(f"Upload successful (URL method): {filename}")
-                    return True
-                else:
-                    # Duplicate file
-                    self.db.record_upload(filename, lang, "duplicate")
-                    return False
-
-            except Exception as url_error:
-                # URL upload not allowed or failed, try file upload
-                error_msg = str(url_error).lower()
-
-                #  TODO: find the specific error message for copyupload
-                if "copyupload" in error_msg:
-                    logger.info(f"URL upload not allowed, trying file upload: {filename}")
-                    return self._upload_via_download(filename, file_url, description, comment, lang)
-                else:
-                    # Other error, don't retry
-                    raise
-
-        except Exception as e:
-            error_msg = self._format_error(e)
-            logger.error(f"Upload failed for {filename}: {error_msg}")
-            self.db.record_upload(filename, lang, "failed", error_msg)
-            return False
+        # except Exception as e:
+        #     error_msg = self._format_error(e)
+        #     logger.error(f"Upload failed for {filename}: {error_msg}")
+        #     self.db.record_upload(filename, lang, "failed", error_msg)
+        #     return False
 
     def _format_error(self, error: Exception) -> str:
         """
