@@ -215,7 +215,7 @@ class WikipediaAPI(WikiAPI):
         logger.info(f"Finding pages with template: {template}")
 
         template_page = self.site.pages[template]
-        pages = [page.name for page in template_page.embeddedin(limit=limit)]
+        pages = [page.name for page in template_page.embeddedin(max_items=limit)]
 
         logger.info(f"Found {len(pages)} pages")
         return pages
