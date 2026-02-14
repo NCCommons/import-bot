@@ -1,8 +1,22 @@
 """
-MediaWiki API wrapper using mwclient.
+MediaWiki file upload handler using raw API calls.
 
-This module provides classes for interacting with NC Commons and Wikipedia
-through the MediaWiki API.
+This module provides the UploadHandler class that implements file upload
+functionality for MediaWiki sites. It uses raw API calls via mwclient's
+raw_call method to have fine-grained control over upload parameters and
+error handling.
+
+Architecture Decision - Why raw API calls?
+    mwclient's built-in upload method has limitations with error handling
+    and doesn't properly support all upload scenarios. Using raw_call gives
+    us complete control over the request parameters and response parsing.
+
+Upload Flow:
+    1. Prepare upload parameters (filename, description, comment, token)
+    2. Add URL parameter for URL uploads, or file data for file uploads
+    3. Send request to MediaWiki API
+    4. Parse response and handle errors/warnings
+    5. Return structured result dictionary
 """
 
 import json
@@ -25,28 +39,74 @@ logger = logging.getLogger(__name__)
 
 class UploadHandler:
     """
-    Handles file uploads to a MediaWiki site using mwclient.
+    Handles file uploads to a MediaWiki site using raw API calls.
+
+    This class provides low-level upload functionality by directly
+    calling the MediaWiki upload API. It handles various error conditions
+    including duplicates, existing files, permission issues, and URL
+    upload restrictions.
+
+    Attributes:
+        site: mwclient Site object for the target wiki.
+
+    Error Handling Strategy:
+        - API errors are converted to custom exceptions
+        - Upload warnings (duplicates, exists) are handled gracefully
+        - Rate limiting errors are surfaced for caller handling
+        - All errors are logged with appropriate severity
+
+    Example:
+        >>> handler = UploadHandler(site)
+        >>> with open("image.jpg", "rb") as f:
+        ...     result = handler.upload_wrap(
+        ...         file=f,
+        ...         filename="image.jpg",
+        ...         description="Test image",
+        ...         comment="Bot: upload test"
+        ...     )
     """
 
-    def __init__(self, site: Site):
+    # Error messages that indicate URL upload is disabled
+    URL_DISABLED_MESSAGES: tuple[str, ...] = (
+        "uploads by url are not allowed from this domain.",
+        "upload by url disabled.",
+    )
+
+    def __init__(self, site: Site) -> None:
         """
-        Initialize connection to MediaWiki site.
+        Initialize the upload handler with a wiki site connection.
 
         Args:
-            site: mwclient Site object representing the MediaWiki site to connect to
+            site: mwclient Site object representing an authenticated
+                connection to a MediaWiki wiki.
         """
-        self.site = site
+        self.site: Site = site
 
     def handle_api_result(self, info: dict, kwargs: dict) -> bool:
         """
-        Handle the result of an API call.
+        Parse and handle the result of a MediaWiki API upload call.
+
+        Processes the API response to detect errors and warnings,
+        raising appropriate exceptions for various failure modes.
 
         Args:
-            info: API response information
-            kwargs: Additional keyword arguments for context
+            info: Parsed JSON response from the MediaWiki API.
+            kwargs: The request parameters (for error context/logging).
 
         Returns:
-            True if the API call was successful, False otherwise
+            True if the response indicates success (no errors/warnings).
+
+        Raises:
+            UploadByUrlDisabledError: If URL upload is not allowed.
+            Exception: For rate limiting errors (surfaced for retry logic).
+            InsufficientPermissionError: If user lacks upload permission.
+            APIError: For other API errors.
+            DuplicateFileError: If file content matches existing file.
+            FileExistError: If file with same name already exists.
+
+        Note:
+            This method does not return False - all failure cases either
+            raise exceptions or return True for caller handling.
         """
         if not info:
             logger.error("Empty API response")
@@ -54,39 +114,39 @@ class UploadHandler:
 
         # Handle standard API error envelope
         if "error" in info:
-            code = info["error"].get("code", "")
-            err_info = info["error"].get("info", "")
+            code: str = info["error"].get("code", "")
+            err_info: str = info["error"].get("info", "")
 
             logger.error(f"API error: {info}")
-            error_infos = [
-                "uploads by url are not allowed from this domain.",
-                "upload by url disabled.",
-            ]
-            # {'error': {'code': 'copyuploaddisabled', 'info': 'Upload by URL disabled.', '*': ''}}
-            if code == "copyuploaddisabled" or any(e in err_info.lower() for e in error_infos):
+
+            # Check for URL upload disabled
+            if code == "copyuploaddisabled" or any(
+                e in err_info.lower() for e in self.URL_DISABLED_MESSAGES
+            ):
                 raise UploadByUrlDisabledError()
 
-            # Rate limit surface for caller
+            # Surface rate limiting for caller to handle (e.g., retry)
             if code in {"ratelimited", "throttled"}:
-                raise Exception("ratelimited: " + err_info)
+                raise Exception(f"ratelimited: {err_info}")
 
             # Permission issues
             if code in {"permissiondenied", "badtoken", "mwoauth-invalid-authorization"}:
-                raise InsufficientPermissionError()
+                raise InsufficientPermissionError(f"{code}: {err_info}")
 
-            # {'error': {'code': 'mustbeloggedin', 'info': 'You must be logged in to upload this file.', '*': ''}, }
-            # raise Exception(f"upload error: {code}: {err_info}")
+            # Generic API error
             raise APIError(code, err_info, {})
 
+        # Check upload warnings
         upload = info.get("upload", {})
-
-        # Warnings handling
         warnings = upload.get("warnings", {})
 
-        duplicate = warnings.get("duplicate", [""])[0].replace("_", " ")
-        if duplicate:
+        # Handle duplicate file warning
+        duplicate_list = warnings.get("duplicate", [""])
+        if duplicate_list and duplicate_list[0]:
+            duplicate = duplicate_list[0].replace("_", " ")
             raise DuplicateFileError(kwargs.get("filename", ""), duplicate)
 
+        # Handle existing file warning
         if "exists" in warnings:
             raise FileExistError(kwargs.get("filename", ""))
 
@@ -101,9 +161,33 @@ class UploadHandler:
         comment: Optional[str] = None,
     ) -> Dict[str, Any]:
         """
-        Upload a file to the site.
-        """
+        Execute a raw upload API call to MediaWiki.
 
+        This method constructs and sends the upload API request,
+        handling both file-based and URL-based uploads.
+
+        Args:
+            file: File-like object opened in binary mode, or None for URL uploads.
+            filename: Target filename on the wiki (without File: prefix). Required.
+            description: Wikitext for the file description page.
+            url: Source URL for URL-based uploads. If provided, file is ignored.
+            comment: Upload summary/comment. Defaults to description if not provided.
+
+        Returns:
+            Dictionary containing the parsed API response.
+
+        Raises:
+            TypeError: If filename is not provided.
+            APIError: If the API returns an error (after handle_api_result processing).
+            DuplicateFileError: If file is a duplicate.
+            FileExistError: If file already exists.
+            UploadByUrlDisabledError: If URL upload is disabled.
+            InsufficientPermissionError: If user lacks permission.
+
+        Note:
+            This is a low-level method. Most callers should use upload_wrap()
+            which provides better error handling and returns a standardized result.
+        """
         if filename is None:
             raise TypeError("filename must be specified")
 
@@ -112,7 +196,8 @@ class UploadHandler:
 
         text = description
 
-        predata = {
+        # Build API request parameters
+        predata: Dict[str, Any] = {
             "action": "upload",
             "format": "json",
             "filename": filename,
@@ -120,41 +205,43 @@ class UploadHandler:
             "text": text,
             "token": self.site.get_token("edit"),
         }
+
         if url:
             predata["url"] = url
 
-        postdata = predata
-
-        files = None
+        files: Optional[Dict[str, tuple]] = None
 
         if file is not None:
-            # Narrowing the type of file from Union[BinaryIO, None]
-            # to BinaryIO, since we know it's not a str at this point.
+            # Type narrowing: we know file is not None here
             file = cast(BinaryIO, file)
             file.seek(0)
 
-            # Workaround for https://github.com/mwclient/mwclient/issues/65
-            # ----------------------------------------------------------------
-            # Since the filename in Content-Disposition is not interpreted,
-            # we can send some ascii-only dummy name rather than the real
-            # filename, which might contain non-ascii.
+            # Workaround for mwclient issue #65:
+            # The Content-Disposition filename is not interpreted, so we can
+            # use an ASCII-only dummy name to avoid encoding issues with
+            # non-ASCII filenames.
             files = {"file": ("fake-filename", file)}
 
-        data = self.site.raw_call("api", postdata, files)
-        info = json.loads(data)
+        # Execute raw API call
+        data = self.site.raw_call("api", predata, files)
+        info: Dict[str, Any] = json.loads(data)
 
         if not info:
             info = {}
 
-        response = info
+        response: Dict[str, Any] = info
 
-        if "for notice of API deprecations and breaking changes." in info.get("error", {}).get("*", ""):
+        # Clear deprecation notices from error field
+        if "for notice of API deprecations and breaking changes." in info.get("error", {}).get(
+            "*", ""
+        ):
             info["error"]["*"] = ""
 
-        # Success
+        # Check for successful upload
         if info.get("upload", {}).get("result") == "Success":
             return info
 
+        # Handle errors and warnings
         if self.handle_api_result(info, kwargs=predata):
             response = info.get("upload", {})
 
@@ -169,19 +256,43 @@ class UploadHandler:
         url: str | None = None,
     ) -> dict:
         """
-        Upload a file to the MediaWiki site.
+        Upload a file to the MediaWiki site with comprehensive error handling.
+
+        This is the primary upload method that wraps mwclient_upload with
+        exception handling and returns a standardized result dictionary.
 
         Args:
-            file: File-like object to upload (or None if using URL upload)
-            filename: Target filename on the wiki
-            description: File description page content
-            comment: Upload comment/summary
-            url: Optional URL for direct upload (if supported)
+            file: File-like object (binary mode) or None for URL uploads.
+            filename: Target filename on the wiki (File: prefix is stripped).
+            description: Wikitext content for the file description page.
+            comment: Upload summary shown in file history.
+            url: Optional URL for direct URL-based upload.
 
         Returns:
-            Dictionary with 'success' key indicating result and optional 'error' key for error details
+            Dictionary with upload result:
+            - {'success': True} on successful upload
+            - {'success': False, 'error': 'duplicate', 'duplicate_of': 'name'}
+              when file content matches existing file
+            - {'success': False, 'error': 'exists'} when filename already exists
+            - {'success': False, 'error': 'permission_denied'} on auth failure
+            - {'success': False, 'error': 'url_disabled'} when URL upload disabled
+            - {'success': False, 'error': 'error_message'} on other failures
+
+        Example:
+            >>> result = handler.upload_wrap(
+            ...     file=None,
+            ...     filename="image.jpg",
+            ...     description="Test image",
+            ...     comment="Bot: upload",
+            ...     url="https://example.com/image.jpg"
+            ... )
+            >>> if result['success']:
+            ...     print("Uploaded!")
+            ... elif result['error'] == 'duplicate':
+            ...     print(f"Duplicate of {result['duplicate_of']}")
         """
-        filename = filename.removeprefix("file:").removeprefix("File:")  # Ensure filename does not have 'File:' prefix
+        # Normalize filename by removing File: prefix
+        filename = filename.removeprefix("file:").removeprefix("File:")
 
         try:
             logger.info(f"Uploading file: {filename}")
@@ -196,8 +307,14 @@ class UploadHandler:
             return {"success": True}
 
         except DuplicateFileError as e:
-            logger.warning(f"Duplicate file detected: {e.file_name} is a duplicate of {e.duplicate_name}")
-            return {"success": False, "error": "duplicate", "duplicate_of": e.duplicate_name}
+            logger.warning(
+                f"Duplicate file detected: {e.file_name} is a duplicate of {e.duplicate_name}"
+            )
+            return {
+                "success": False,
+                "error": "duplicate",
+                "duplicate_of": e.duplicate_name,
+            }
 
         except FileExistError as e:
             logger.warning(f"File already exists: {e.file_name}")
@@ -205,12 +322,13 @@ class UploadHandler:
 
         except InsufficientPermissionError:
             logger.error(
-                f"Insufficient permissions to upload the file for user {self.site.username} on {self.site.host}"
+                f"Insufficient permissions to upload for user {self.site.username} "
+                f"on {self.site.host}"
             )
             return {"success": False, "error": "permission_denied"}
 
         except UploadByUrlDisabledError:
-            logger.warning(f"URL upload disabled in {self.site.host}")
+            logger.warning(f"URL upload disabled on {self.site.host}")
             return {"success": False, "error": "url_disabled"}
 
         except mwclient.errors.APIError as e:
