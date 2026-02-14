@@ -96,7 +96,8 @@ class FileUploader:
                 # URL upload not allowed or failed, try file upload
                 error_msg = str(url_error).lower()
 
-                if "url" in error_msg or "copyupload" in error_msg:
+                #  TODO: find the specific error message for copyupload
+                if "copyupload" in error_msg:
                     logger.info(f"URL upload not allowed, trying file upload: {filename}")
                     return self._upload_via_download(filename, file_url, description, comment, lang)
                 else:
