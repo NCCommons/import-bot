@@ -204,7 +204,7 @@ class TestPageProcessor:
         mock_wiki_api.lang = "en"
 
         # First raises exception, second succeeds
-        processor.uploader.upload_file.side_effect = [Exception("Upload error"), True]
+        processor.uploader.upload_file.side_effect = [Exception("Upload error"), {"success": True}]
 
         result = processor.process_page("Test Page")
 
@@ -263,7 +263,7 @@ class TestPageProcessor:
 
         mock_wiki_api.get_page_text.return_value = page_text
         mock_wiki_api.lang = "en"
-        processor.uploader.upload_file.return_value = True
+        processor.uploader.upload_file.return_value = {"success": True}
 
         processor.process_page("Test Page")
 
@@ -280,7 +280,7 @@ class TestPageProcessor:
         """Test that processor records correct language."""
         mock_wiki_api.get_page_text.return_value = "{{NC|test.jpg|Caption}}"
         mock_wiki_api.lang = "ar"  # Arabic
-        processor.uploader.upload_file.return_value = True
+        processor.uploader.upload_file.return_value = {"success": True}
 
         processor.process_page("Test Page")
 
@@ -295,7 +295,7 @@ class TestPageProcessor:
 
         mock_wiki_api.get_page_text.return_value = page_text
         mock_wiki_api.lang = "en"
-        processor.uploader.upload_file.return_value = True
+        processor.uploader.upload_file.return_value = {"success": True}
 
         processor.process_page("Test Page")
 
