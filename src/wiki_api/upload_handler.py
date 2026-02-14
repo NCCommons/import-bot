@@ -144,7 +144,7 @@ class UploadHandler:
             file.close()
 
         if not info:
-            return {"error": "Empty API response"}
+            info = {}
 
         response = info
 
