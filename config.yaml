@@ -6,7 +6,8 @@ nc_commons:
 # Wikipedia configuration
 wikipedia:
     upload_comment: "Bot: import from nccommons.org"
-    category: "Category:Contains images from NC Commons"
+    pagecategory: "Category:Contains images from NC Commons"
+    filecategory: "Category:Files imported from NC Commons"
 
 # Database configuration
 database:

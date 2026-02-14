@@ -99,3 +99,25 @@ class WikipediaAPI(WikiAPI):
             logger.info(f"Upload successful: {filename}")
 
         return result
+
+    def file_exists(self, filename: str) -> bool:
+        """
+        Check if a file exists on Wikipedia.
+
+        Args:
+            filename: Target filename on Wikipedia
+
+        Returns:
+            True if the file exists, False otherwise
+        """
+        logger.info(f"Checking if file exists: {filename}")
+
+        file_page = self.site.images[filename]
+        exists = file_page.exists
+
+        if exists:
+            logger.info(f"File exists: {filename}")
+        else:
+            logger.info(f"File does not exist: {filename}")
+
+        return exists

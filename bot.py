@@ -16,15 +16,21 @@ import logging
 import os
 import sys
 from pathlib import Path
-
 import yaml
 from dotenv import load_dotenv
 from src.database import Database
-from src.logging_config import setup_logging
 from src.parsers import parse_language_list
 from src.processor import PageProcessor
 from src.uploader import FileUploader
 from src.wiki_api import NCCommonsAPI, WikipediaAPI
+from src.logging_config import setup_logging
+
+setup_logging(
+    log_level="DEBUG",
+    name="bot"
+)
+
+logger = logging.getLogger("bot")
 
 
 def load_credentials() -> dict:
@@ -79,7 +85,7 @@ def process_language(
     Returns:
         Dictionary with processing statistics
     """
-    logger = logging.getLogger(__name__)
+
     logger.info(f"{'='*60}")
     logger.info(f"Processing language: {language_code}")
     logger.info(f"{'='*60}")
@@ -134,7 +140,7 @@ def retrieve_language_list(
     language_page,
     nc_api: NCCommonsAPI,
 ):
-    logger = logging.getLogger(__name__)
+
     languages = {}
     # Determine which languages to process
     if args.languages:
@@ -179,7 +185,6 @@ def process_languages(
     languages,
 ):
 
-    logger = logging.getLogger(__name__)
     # Process each language
     overall_stats = {
         "languages_processed": 0,
@@ -223,16 +228,6 @@ def main():
     with open(args.config, "r") as f:
         config = yaml.safe_load(f)
 
-    # Setup logging
-    logging_config = config["logging"]
-    setup_logging(
-        logging_config.get("level", "INFO"),
-        logging_config.get("file", "./logs/bot.log"),
-        logging_config.get("max_bytes", 10485760),
-        logging_config.get("backup_count", 5),
-    )
-
-    logger = logging.getLogger(__name__)
     logger.info("=" * 60)
     logger.info("NC Commons Import Bot Starting")
     logger.info("=" * 60)
@@ -264,7 +259,7 @@ def safe_main():
     try:
         return main()
     except KeyboardInterrupt:
-        logger = logging.getLogger(__name__)
+
         logger.info("Bot interrupted by user")
         return 130
 

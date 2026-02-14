@@ -40,7 +40,7 @@ class FileUploader:
         self.db = database
         self.config = config
 
-    def upload_file(self, filename: str) -> bool:
+    def upload_file(self, filename: str) -> dict:
         """
         Upload a file from NC Commons to Wikipedia.
 
@@ -56,14 +56,18 @@ class FileUploader:
             filename: Name of the file to upload
 
         Returns:
-            True if upload succeeded, False if duplicate or already uploaded
+            Dictionary with 'success' key and optional 'duplicate_of' key
+            - {'success': True} if upload succeeded
+            - {'success': False, 'error': 'already_uploaded'} if file was already uploaded
+            - {'success': False, 'error': 'duplicate', 'duplicate_of': 'filename'} if duplicate detected
+            - {'success': False, 'error': 'error_message'} if upload failed
         """
         lang = self.wiki_api.lang
 
         # Check if already uploaded
         if self.db.is_file_uploaded(filename, lang):
             logger.info(f"File already uploaded: {filename}")
-            return False
+            return {"success": False, "error": "already_uploaded"}
 
         # try:
         # Get file information from NC Commons
@@ -88,7 +92,7 @@ class FileUploader:
         if result.get("success"):
             self.db.record_upload(filename, lang, "success")
             logger.info(f"Upload successful (URL method): {filename}")
-            return True
+            return {"success": True}
 
         # URL upload not allowed or failed, try file upload
         error_msg = result.get("error")
@@ -96,12 +100,17 @@ class FileUploader:
         if error_msg == "url_disabled":
             logger.info("URL upload not allowed.")
             return self._upload_via_download(filename, file_url, description, comment, lang)
+        elif error_msg == "duplicate":
+            duplicate_of = result.get("duplicate_of", "")
+            logger.warning(f"Duplicate file detected: {filename} is a duplicate of {duplicate_of}")
+            self.db.record_upload(filename, lang, "duplicate", f"duplicate_of:{duplicate_of}")
+            return {"success": False, "error": "duplicate", "duplicate_of": duplicate_of}
         else:
             logger.error(f"Upload failed for {filename}: {error_msg}")
             self.db.record_upload(filename, lang, "failed", error_msg)
-            return False
+            return {"success": False, "error": error_msg}
 
-    def _upload_via_download(self, filename: str, url: str, description: str, comment: str, language: str) -> bool:
+    def _upload_via_download(self, filename: str, url: str, description: str, comment: str, language: str) -> dict:
         """
         Download file from URL then upload to Wikipedia.
 
@@ -115,7 +124,10 @@ class FileUploader:
             language: Language code
 
         Returns:
-            True if successful, False if duplicate
+            Dictionary with 'success' key and optional 'duplicate_of' key
+            - {'success': True} if upload succeeded
+            - {'success': False, 'error': 'duplicate', 'duplicate_of': 'filename'} if duplicate detected
+            - {'success': False, 'error': 'error_message'} if upload failed
         """
         logger.info(f"Attempting file upload for {filename} after URL upload failed")
         # Validate URL scheme
@@ -144,11 +156,16 @@ class FileUploader:
         if result.get("success"):
             self.db.record_upload(filename, language, "success")
             logger.info(f"Upload successful (file method): {filename}")
-            return True
+            return {"success": True}
+        elif error_msg == "duplicate":
+            duplicate_of = result.get("duplicate_of", "")
+            logger.warning(f"Duplicate file detected: {filename} is a duplicate of {duplicate_of}")
+            self.db.record_upload(filename, language, "duplicate", f"duplicate_of:{duplicate_of}")
+            return {"success": False, "error": "duplicate", "duplicate_of": duplicate_of}
         else:
             logger.error(f"Upload failed for {filename}: {error_msg}")
             self.db.record_upload(filename, language, "failed", error_msg)
-            return False
+            return {"success": False, "error": error_msg}
 
     def _process_description(self, description: str) -> str:
         """
@@ -166,7 +183,7 @@ class FileUploader:
         processed = remove_categories(description)
 
         # Add NC Commons category
-        category = self.config["wikipedia"]["category"]
+        category = self.config["wikipedia"]["filecategory"]
         processed += f"\n[[{category}]]"
 
         return processed.strip()

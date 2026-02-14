@@ -31,14 +31,14 @@ class TestNCCommonsAPI:
         mock_page.imageinfo = {"url": "https://example.com/image.jpg"}
 
         mock_site = MagicMock()
-        mock_site.pages.__getitem__.return_value = mock_page
+        mock_site.images.__getitem__.return_value = mock_page
         mock_site_class.return_value = mock_site
 
         api = NCCommonsAPI("user", "pass")
         url = api.get_image_url("test.jpg")
 
         assert url == "https://example.com/image.jpg"
-        mock_site.pages.__getitem__.assert_called_once_with("File:test.jpg")
+        mock_site.images.__getitem__.assert_called_once_with("File:test.jpg")
 
     @patch("src.wiki_api.main_api.Site")
     def test_get_image_url_adds_file_prefix(self, mock_site_class):
@@ -47,7 +47,7 @@ class TestNCCommonsAPI:
         mock_page.imageinfo = {"url": "https://example.com/image.jpg"}
 
         mock_site = MagicMock()
-        mock_site.pages.__getitem__.return_value = mock_page
+        mock_site.images.__getitem__.return_value = mock_page
         mock_site_class.return_value = mock_site
 
         api = NCCommonsAPI("user", "pass")
@@ -55,7 +55,7 @@ class TestNCCommonsAPI:
 
         # Should not add duplicate prefix
         assert url == "https://example.com/image.jpg"
-        mock_site.pages.__getitem__.assert_called_once_with("File:test.jpg")
+        mock_site.images.__getitem__.assert_called_once_with("File:test.jpg")
 
     @patch("src.wiki_api.main_api.Site")
     def test_get_file_description(self, mock_site_class):

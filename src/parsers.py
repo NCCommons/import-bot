@@ -29,14 +29,16 @@ class NCTemplate:
     filename: str
     caption: str = ""
 
-    def to_file_syntax(self) -> str:
+    def to_file_syntax(self, filename=None) -> str:
         """
         Convert NC template to standard Wikipedia file syntax.
 
         Returns:
             Wikitext for embedded file (e.g., [[File:example.jpg|thumb|caption]])
         """
-        return f"[[File:{self.filename}|thumb|{self.caption}]]"
+        filename = filename or self.filename
+        filename = filename.removeprefix("File:")  # Ensure filename does not have 'File:' prefix
+        return f"[[File:{filename}|thumb|{self.caption}]]"
 
 
 def parse_language_list(page_text: str) -> List[str]:
