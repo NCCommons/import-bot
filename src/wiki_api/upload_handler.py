@@ -122,9 +122,6 @@ class UploadHandler:
         files = None
 
         if file is not None:
-            if not hasattr(file, "read"):
-                file = open(file, "rb")
-
             # Narrowing the type of file from Union[str, BinaryIO, None]
             # to BinaryIO, since we know it's not a str at this point.
             file = cast(BinaryIO, file)

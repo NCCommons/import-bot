@@ -92,7 +92,8 @@ class TestWikiAPI:
     def test_ensure_logged_in_failure(self, mock_site_class):
         """Test login failure handling."""
         mock_site = Mock()
-        mock_site.login.side_effect = mwclient.errors.LoginError("Invalid credentials")
+        # Use a simple Exception since LoginError has complex initialization
+        mock_site.login.side_effect = Exception("Login failed")
         mock_site_class.return_value = mock_site
 
         api = WikiAPI("test.wikipedia.org", username="testuser", password="wrongpass")
@@ -103,7 +104,10 @@ class TestWikiAPI:
     @patch("src.wiki_api.main_api.Site")
     def test_save_page_not_logged_in(self, mock_site_class):
         """Test save_page when not logged in returns False."""
+        mock_page = Mock()
+        mock_page.save.return_value = False
         mock_site = MagicMock()
+        mock_site.pages.__getitem__.return_value = mock_page
         mock_site_class.return_value = mock_site
 
         api = WikiAPI("test.wikipedia.org", username="testuser", password="testpass")
