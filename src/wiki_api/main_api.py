@@ -58,19 +58,21 @@ class WikiAPI(UploadHandler):
         """
         Ensure that the user is logged in before performing actions that require authentication.
         """
+        if self.login_done:
+            return
+
         try:
             logger.info(f"Logging in as {self.username}")
             self.site.login(self.username, self.password)
-            self.login_done = self.site.logged_in
         except mwclient.errors.LoginError as e:
             if "BotPasswordSessionProvider" in str(e):
                 self.site.clientlogin(None, username=self.username, password=self.password)
-                self.login_done = self.site.logged_in
             else:
                 logger.exception(f"Login failed for {self.username}: {e}")
 
-        if self.login_done:
+        if self.site.logged_in:
             logger.info(f"Login successful for {self.username}")
+            self.login_done = True
 
     def get_page_text(self, title: str) -> str:
         """
