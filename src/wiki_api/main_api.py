@@ -180,7 +180,7 @@ class WikiAPI(UploadHandler):
         page = self.site.pages[title]
         return page.text()
 
-    def save_page(self, title: str, text: str, summary: str) -> bool:
+    def save_page(self, title: str, text: str, summary: str):
         """
         Save new content to a wiki page.
 
@@ -193,16 +193,17 @@ class WikiAPI(UploadHandler):
             summary: Edit summary displayed in page history.
 
         Returns:
-            True if the save was successful, False if login is required
-            or the save failed.
+            The result from page.save() on success, or False if login
+            is required or failed.
 
         Example:
-            >>> api.save_page(
+            >>> result = api.save_page(
             ...     "User:Bot/Sandbox",
             ...     "== Test ==\\nHello world",
             ...     "Bot: Testing edit"
             ... )
-            True
+            >>> if result:
+            ...     print("Save successful")
 
         Note:
             This method does not handle edit conflicts. If the page has
@@ -216,8 +217,7 @@ class WikiAPI(UploadHandler):
             return False
 
         page = self.site.pages[title]
-        result = page.save(text, summary=summary)
-        return result is not None
+        return page.save(text, summary=summary)
 
     def upload(
         self,
