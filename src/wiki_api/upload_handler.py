@@ -200,3 +200,6 @@ class UploadHandler:
             error_msg = str(e)
             logger.error(f"Upload failed: {error_msg}")
             return {"success": False, "error": error_msg}
+        except Exception as e:
+            logger.error(f"Unexpected error during upload: {e}")
+            return {"success": False, "error": str(e)}

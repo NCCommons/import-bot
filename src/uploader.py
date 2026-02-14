@@ -119,43 +119,45 @@ class FileUploader:
         """
         temp_file = None
 
-        try:
-            # Validate URL scheme
-            parsed_url = urllib.parse.urlparse(url)
-            if parsed_url.scheme != "https":
-                raise ValueError(f"Invalid URL scheme '{parsed_url.scheme}' for {filename}: only HTTPS is allowed")
+        # Validate URL scheme
+        parsed_url = urllib.parse.urlparse(url)
+        if parsed_url.scheme != "https":
+            raise ValueError(f"Invalid URL scheme '{parsed_url.scheme}' for {filename}: only HTTPS is allowed")
 
-            # Download to temporary file
-            logger.info(f"Downloading file: {filename}")
-            temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".tmp")
-            temp_path = temp_file.name
-            temp_file.close()
+        # Download to temporary file
+        logger.info(f"Downloading file: {filename}")
 
-            urllib.request.urlretrieve(url, temp_path)
-            logger.debug(f"Downloaded to: {temp_path}")
+        temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".tmp")
+        temp_path = temp_file.name
+        temp_file.close()
 
-            # Upload from file
-            result = self.wiki_api.upload_from_file(
-                filename=filename, filepath=temp_path, description=description, comment=comment
-            )
+        urllib.request.urlretrieve(url, temp_path)
+        logger.debug(f"Downloaded to: {temp_path}")
 
-            error = result.get("error")
-            error_msg = str(error).lower()
+        # Upload from file
+        result = self.wiki_api.upload_from_file(
+            filename=filename,
+            filepath=temp_path,
+            description=description,
+            comment=comment,
+        )
 
-            if result.get("success"):
-                self.db.record_upload(filename, language, "success")
-                logger.info(f"Upload successful (file method): {filename}")
-                return True
-            else:
-                logger.error(f"Upload failed for {filename}: {error_msg}")
-                self.db.record_upload(filename, language, "failed", error_msg)
-                return False
+        # Clean up temporary file
+        if temp_file:
+            Path(temp_path).unlink(missing_ok=True)
+            logger.debug(f"Cleaned up temp file: {temp_path}")
 
-        finally:
-            # Clean up temporary file
-            if temp_file:
-                Path(temp_path).unlink(missing_ok=True)
-                logger.debug(f"Cleaned up temp file: {temp_path}")
+        error = result.get("error")
+        error_msg = str(error).lower()
+
+        if result.get("success"):
+            self.db.record_upload(filename, language, "success")
+            logger.info(f"Upload successful (file method): {filename}")
+            return True
+        else:
+            logger.error(f"Upload failed for {filename}: {error_msg}")
+            self.db.record_upload(filename, language, "failed", error_msg)
+            return False
 
     def _process_description(self, description: str) -> str:
         """
