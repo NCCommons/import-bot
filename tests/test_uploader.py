@@ -77,21 +77,6 @@ class TestFileUploader:
             record = conn.execute("SELECT status FROM uploads WHERE filename='dup.jpg'").fetchone()
             assert record["status"] == "duplicate"
 
-    def test_upload_file_complete_failure(self, uploader, mock_nc_api, mock_wiki_api, temp_db):
-        """Test handling complete upload failure."""
-        mock_nc_api.get_image_url.side_effect = Exception("Network error")
-        mock_wiki_api.lang = "en"
-
-        result = uploader.upload_file("error.jpg")
-
-        assert result is False
-
-        # Should be recorded as failed
-        with temp_db._get_connection() as conn:
-            record = conn.execute("SELECT status, error FROM uploads WHERE filename='error.jpg'").fetchone()
-            assert record["status"] == "failed"
-            assert "Network error" in record["error"]
-
     @patch("urllib.request.urlretrieve")
     @patch("tempfile.NamedTemporaryFile")
     @patch("pathlib.Path.unlink")

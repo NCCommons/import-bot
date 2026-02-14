@@ -4,6 +4,7 @@ Test script for uploading a file to Wikipedia from URL.
 This script tests the upload_from_url functionality directly using the WikipediaAPI class.
 """
 
+import logging
 import os
 import sys
 from dotenv import load_dotenv
@@ -38,6 +39,8 @@ setup_logging(
     10485760,
     5,
 )
+
+logging.getLogger("mwclient").setLevel(logging.DEBUG)  # Set mwclient to debug for detailed API interaction logs
 
 
 def main():
