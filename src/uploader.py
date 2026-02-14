@@ -183,7 +183,7 @@ class FileUploader:
         processed = remove_categories(description)
 
         # Add NC Commons category
-        category = self.config["wikipedia"]["category"]
+        category = self.config["wikipedia"]["filecategory"]
         processed += f"\n[[{category}]]"
 
         return processed.strip()

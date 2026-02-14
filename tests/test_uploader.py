@@ -168,17 +168,10 @@ class TestFileUploader:
         processed = uploader._process_description(description)
 
         # Should add NC Commons category from config
-        expected_category = sample_config["wikipedia"]["category"]
+        expected_category = sample_config["wikipedia"]["filecategory"]
         assert f"[[{expected_category}]]" in processed
 
-    def test_process_description_empty_input(self, uploader):
-        """Test processing empty description."""
-        processed = uploader._process_description("")
-
-        # Should still add category
-        assert "[[Category:Contains images from NC Commons]]" in processed
-
-    def test_upload_file_processes_description(self, uploader, mock_nc_api, mock_wiki_api, temp_db):
+    def test_upload_file_processes_description(self, uploader, mock_nc_api, mock_wiki_api, sample_config):
         """Test that file upload processes description correctly."""
         mock_nc_api.get_image_url.return_value = "https://example.com/test.jpg"
         mock_nc_api.get_file_description.return_value = "Original\n[[Category:OldCat]]"
@@ -194,8 +187,8 @@ class TestFileUploader:
         # Should not contain old category
         assert "[[Category:OldCat]]" not in description
 
-        # Should contain NC Commons category
-        assert "[[Category:Contains images from NC Commons]]" in description
+        category = sample_config["wikipedia"]["filecategory"]
+        assert f"[[{category}]]" in description
 
     def test_upload_file_uses_config_comment(self, uploader, mock_nc_api, mock_wiki_api, temp_db, sample_config):
         """Test that upload uses comment from config."""

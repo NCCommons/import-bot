@@ -61,15 +61,27 @@ class PageProcessor:
 
         templates: list = []
 
-        # Get page content
-        page_text = self.wiki_api.get_page_text(page_title)
+        try:
+            # Get page content
+            page_text = self.wiki_api.get_page_text(page_title)
+        except Exception as e:
+            logger.error(f"Failed to fetch page {page_title}: {e}")
+            # Record the attempt even though it failed
+            try:
+                self.db.record_page_processing(page_title, self.wiki_api.lang, 0, 0)
+            except Exception as db_error:
+                logger.error(f"Failed to record page processing error: {db_error}")
+            return False
 
         # Extract NC templates
         templates = extract_nc_templates(page_text)
 
         if not templates:
             logger.info("No NC templates found on page")
-            self.db.record_page_processing(page_title, self.wiki_api.lang, 0, 0)
+            try:
+                self.db.record_page_processing(page_title, self.wiki_api.lang, 0, 0)
+            except Exception as e:
+                logger.error(f"Failed to record page processing: {e}")
             return False
 
         logger.info(f"Found {len(templates)} NC templates")
@@ -83,58 +95,89 @@ class PageProcessor:
 
         for template in templates:
             logger.info(f"Processing file: {template.filename}")
-
-            # Upload file
-            result = self.uploader.upload_file(template.filename)
-
-            if result.get("success"):
-                files_changed += 1
-                files_uploaded += 1
-                # Map original template to file syntax
-                replacements[template.original_text] = template.to_file_syntax()
-                logger.info(f"File uploaded successfully: {template.filename}")
-
-            elif result.get("error") == "exists":
+            # first check if file already exists to avoid unnecessary uploads
+            if self.wiki_api.file_exists(template.filename):
                 files_changed += 1
                 files_exists += 1
                 # Map original template to file syntax
                 replacements[template.original_text] = template.to_file_syntax()
                 logger.info(f"File already exists: {template.filename}")
+                continue
 
-            elif result.get("error") == "duplicate":
-                # File is a duplicate, use the existing file's name
-                files_changed += 1
-                files_duplicate += 1
-                duplicate_of = result.get("duplicate_of", template.filename)
-                # Create replacement with the duplicate filename
-                replacements[template.original_text] = template.to_file_syntax(duplicate_of)
+            try:
+                # Upload file
+                result = self.uploader.upload_file(template.filename)
 
-                logger.info(f"File is duplicate of {duplicate_of}, using existing file: {duplicate_of}")
-            else:
-                logger.info(f"File not uploaded (error: {result.get('error')}): {template.filename}")
+                if result.get("success"):
+                    files_changed += 1
+                    files_uploaded += 1
+                    # Map original template to file syntax
+                    replacements[template.original_text] = template.to_file_syntax()
+                    logger.info(f"File uploaded successfully: {template.filename}")
+
+                elif result.get("error") == "exists":
+                    files_changed += 1
+                    files_exists += 1
+                    # Map original template to file syntax
+                    replacements[template.original_text] = template.to_file_syntax()
+                    logger.info(f"File already exists: {template.filename}")
+
+                elif result.get("error") == "duplicate":
+                    # File is a duplicate, use the existing file's name
+                    files_changed += 1
+                    files_duplicate += 1
+                    duplicate_of = result.get("duplicate_of", template.filename)
+                    # Create replacement with the duplicate filename
+                    replacements[template.original_text] = template.to_file_syntax(duplicate_of)
+
+                    logger.info(f"File is duplicate of {duplicate_of}, using existing file: {duplicate_of}")
+                else:
+                    logger.info(f"File not uploaded (error: {result.get('error')}): {template.filename}")
+            except Exception as e:
+                logger.error(f"Exception uploading file {template.filename}: {e}")
+                # Continue processing other files even if one fails
 
         # If any files were uploaded, update the page
         if replacements:
             new_text = self._apply_replacements(page_text, replacements)
 
             # Add category if not present
-            category = f"[[{self.config['wikipedia']['category']}]]"
+            category = f"[[{self.config['wikipedia']['pagecategory']}]]"
             if category not in new_text:
                 new_text += f"\n{category}"
                 logger.debug("Added NC Commons category to page")
 
             # Save page
             summary = f"Bot: Imported {files_changed} file(s) from NC Commons"
-            self.wiki_api.save_page(page_title, new_text, summary)
+            try:
+                self.wiki_api.save_page(page_title, new_text, summary)
+            except Exception as e:
+                logger.error(f"Failed to save page {page_title}: {e}")
+                # Still record the processing attempt
+                # Count successful uploads and duplicates (but not "exists")
+                files_counted = files_uploaded + files_duplicate
+                try:
+                    self.db.record_page_processing(page_title, self.wiki_api.lang, len(templates), files_counted)
+                except Exception as db_error:
+                    logger.error(f"Failed to record page processing: {db_error}")
+                return False
 
             # Record successful page processing after successful save
-            self.db.record_page_processing(page_title, self.wiki_api.lang, len(templates), files_changed)
+            # Count successful uploads and duplicates (but not "exists")
+            files_counted = files_uploaded + files_duplicate
+            try:
+                self.db.record_page_processing(page_title, self.wiki_api.lang, len(templates), files_counted)
+            except Exception as e:
+                logger.error(f"Failed to record page processing: {e}")
 
             logger.info(f"Page updated: {files_changed} files imported")
             return True
         else:
             # Record that processing was skipped (no files uploaded)
-            self.db.record_page_processing(page_title, self.wiki_api.lang, len(templates), 0)
+            try:
+                self.db.record_page_processing(page_title, self.wiki_api.lang, len(templates), 0)
+            except Exception as e:
+                logger.error(f"Failed to record page processing: {e}")
             logger.info("No files were uploaded, page not modified")
             return False
 

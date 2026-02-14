@@ -41,7 +41,8 @@ def sample_config():
         "nc_commons": {"site": "nccommons.org", "language_page": "User:Mr. Ibrahem/import bot"},
         "wikipedia": {
             "upload_comment": "Bot: import from nccommons.org",
-            "category": "Category:Contains images from NC Commons",
+            "pagecategory": "Category:Contains images from NC Commons",
+            "filecategory": "Category:Files imported from NC Commons",
         },
         "database": {"path": "./test.db"},
         "processing": {

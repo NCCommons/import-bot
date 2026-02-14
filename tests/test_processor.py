@@ -135,12 +135,12 @@ class TestPageProcessor:
         call_args = mock_wiki_api.save_page.call_args
         saved_text = call_args[0][1]  # Second positional argument
 
-        expected_category = sample_config["wikipedia"]["category"]
+        expected_category = sample_config["wikipedia"]["pagecategory"]
         assert f"[[{expected_category}]]" in saved_text
 
     def test_process_page_doesnt_duplicate_category(self, processor, mock_wiki_api, temp_db, sample_config):
         """Test that category isn't added if already present."""
-        category = sample_config["wikipedia"]["category"]
+        category = sample_config["wikipedia"]["pagecategory"]
         page_text = f"{{{{NC|test.jpg|Caption}}}}\n[[{category}]]"
 
         mock_wiki_api.get_page_text.return_value = page_text
