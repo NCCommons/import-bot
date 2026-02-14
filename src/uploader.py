@@ -81,58 +81,28 @@ class FileUploader:
         comment = self.config["wikipedia"]["upload_comment"]
 
         # Try URL upload first (faster, doesn't require download)
-        try:
-            success = self.wiki_api.upload_from_url(
-                filename=filename, url=file_url, description=description, comment=comment
-            )
+        result = self.wiki_api.upload_from_url(
+            filename=filename,
+            url=file_url,
+            description=description,
+            comment=comment
+        )
+        error = result.get("error")
+        if result.get("success"):
+            self.db.record_upload(filename, lang, "success")
+            logger.info(f"Upload successful (URL method): {filename}")
+            return True
 
-            if success:
-                self.db.record_upload(filename, lang, "success")
-                logger.info(f"Upload successful (URL method): {filename}")
-                return True
-            else:
-                # Duplicate file
-                self.db.record_upload(filename, lang, "duplicate")
-                return False
+        # URL upload not allowed or failed, try file upload
+        error_msg = str(error).lower()
 
-        except Exception as url_error:
-            # URL upload not allowed or failed, try file upload
-            error_msg = str(url_error).lower()
-
-            #  TODO: find the specific error message for copyupload
-            if "copyupload" in error_msg:
-                logger.info(f"URL upload not allowed, trying file upload: {filename}")
-                return self._upload_via_download(filename, file_url, description, comment, lang)
-            else:
-                error_msg = self._format_error(url_error)
-                logger.error(f"Upload failed for {filename}: {error_msg}")
-                self.db.record_upload(filename, lang, "failed", error_msg)
-                return False
-
-        # except Exception as e:
-        #     error_msg = self._format_error(e)
-        #     logger.error(f"Upload failed for {filename}: {error_msg}")
-        #     self.db.record_upload(filename, lang, "failed", error_msg)
-        #     return False
-
-    def _format_error(self, error: Exception) -> str:
-        """
-        Format an exception into a readable error message.
-
-        Handles mwclient API errors specially to extract useful information.
-
-        Args:
-            error: The exception to format
-
-        Returns:
-            Human-readable error message
-        """
-        if isinstance(error, mwclient.errors.APIError):
-            # mwclient APIError has code and info attributes
-            code = getattr(error, 'code', 'unknown')
-            info = getattr(error, 'info', str(error))
-            return f"API Error [{code}]: {info}"
-        return str(error)
+        if error_msg == "url_disabled":
+            logger.info(f"URL upload not allowed, trying file upload: {filename}")
+            return self._upload_via_download(filename, file_url, description, comment, lang)
+        else:
+            logger.error(f"Upload failed for {filename}: {error_msg}")
+            self.db.record_upload(filename, lang, "failed", error_msg)
+            return False
 
     def _upload_via_download(self, filename: str, url: str, description: str, comment: str, language: str) -> bool:
         """
