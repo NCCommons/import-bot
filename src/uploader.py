@@ -11,6 +11,8 @@ import urllib.parse
 import urllib.request
 from pathlib import Path
 
+import mwclient
+
 from src.database import Database
 from src.parsers import remove_categories
 from src.wiki_api import NCCommonsAPI, WikipediaAPI
@@ -106,9 +108,29 @@ class FileUploader:
                     raise
 
         except Exception as e:
-            logger.error(f"Upload failed for {filename}: {e}")
-            self.db.record_upload(filename, lang, "failed", str(e))
+            error_msg = self._format_error(e)
+            logger.error(f"Upload failed for {filename}: {error_msg}")
+            self.db.record_upload(filename, lang, "failed", error_msg)
             return False
+
+    def _format_error(self, error: Exception) -> str:
+        """
+        Format an exception into a readable error message.
+
+        Handles mwclient API errors specially to extract useful information.
+
+        Args:
+            error: The exception to format
+
+        Returns:
+            Human-readable error message
+        """
+        if isinstance(error, mwclient.errors.APIError):
+            # mwclient APIError has code and info attributes
+            code = getattr(error, 'code', 'unknown')
+            info = getattr(error, 'info', str(error))
+            return f"API Error [{code}]: {info}"
+        return str(error)
 
     def _upload_via_download(self, filename: str, url: str, description: str, comment: str, language: str) -> bool:
         """
