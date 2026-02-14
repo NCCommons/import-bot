@@ -27,13 +27,6 @@ def setup_logging(log_level: str, log_file: str, max_bytes: int, backup_count: i
     """
     # Convert log level string to logging constant
     level = getattr(logging, log_level.upper())
-    log_file_path = Path(log_file)
-
-    # Create logs directory
-    log_file_path.parent.mkdir(parents=True, exist_ok=True)
-
-    # File formatter (plain text for log files)
-    file_formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 
     # Console formatter with colors (only for levelname)
     console_formatter = colorlog.ColoredFormatter(
@@ -47,10 +40,6 @@ def setup_logging(log_level: str, log_file: str, max_bytes: int, backup_count: i
         },
     )
 
-    # File handler with rotation
-    file_handler = RotatingFileHandler(log_file_path, maxBytes=max_bytes, backupCount=backup_count)
-    file_handler.setFormatter(file_formatter)
-
     # Console handler with colors
     console_handler = logging.StreamHandler()
     console_handler.setFormatter(console_formatter)
@@ -58,7 +47,21 @@ def setup_logging(log_level: str, log_file: str, max_bytes: int, backup_count: i
     # Configure root logger
     root_logger = logging.getLogger()
     root_logger.setLevel(level)
-    root_logger.addHandler(file_handler)
     root_logger.addHandler(console_handler)
+
+    if log_file:
+        log_file_path = Path(log_file)
+
+        # Create logs directory
+        log_file_path.parent.mkdir(parents=True, exist_ok=True)
+
+        # File formatter (plain text for log files)
+        file_formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+
+        # File handler with rotation
+        file_handler = RotatingFileHandler(log_file_path, maxBytes=max_bytes, backupCount=backup_count)
+        file_handler.setFormatter(file_formatter)
+
+        root_logger.addHandler(file_handler)
 
     logging.info("Logging configured")
