@@ -96,9 +96,6 @@ class PageProcessor:
                     logger.error(f"Failed to upload {template.filename}: {e}")
                     # Continue with other files
 
-            # Record page processing
-            self.db.record_page_processing(page_title, self.wiki_api.lang, len(templates), files_uploaded)
-
             # If any files were uploaded, update the page
             if replacements:
                 new_text = self._apply_replacements(page_text, replacements)
@@ -113,14 +110,21 @@ class PageProcessor:
                 summary = f"Bot: Imported {files_uploaded} file(s) from NC Commons"
                 self.wiki_api.save_page(page_title, new_text, summary)
 
+                # Record successful page processing after successful save
+                self.db.record_page_processing(page_title, self.wiki_api.lang, len(templates), files_uploaded)
+
                 logger.info(f"Page updated: {files_uploaded} files imported")
                 return True
             else:
+                # Record that processing was skipped (no files uploaded)
+                self.db.record_page_processing(page_title, self.wiki_api.lang, len(templates), 0)
                 logger.info("No files were uploaded, page not modified")
                 return False
 
         except Exception as e:
             logger.error(f"Error processing page {page_title}: {e}")
+            # Record failure state
+            self.db.record_page_processing(page_title, self.wiki_api.lang, len(templates), 0)
             return False
 
     def _apply_replacements(self, text: str, replacements: dict) -> str:
