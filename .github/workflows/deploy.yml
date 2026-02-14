@@ -1,0 +1,21 @@
+name: deploy.yml
+on:
+  push:
+    branches:
+      - main
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Deploy to server
+        uses: appleboy/ssh-action@v1.2.4
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          port: 22
+          request_pty: true
+          script_stop: true
+          key: ${{ secrets.KEY }}
+          script: |
+            become ncc bash -lc "shs/update_import_bot.sh && echo \"Updated on: $(date '+%Y-%m-%d %H:%M:%S')\" > ~/ncc_github"
