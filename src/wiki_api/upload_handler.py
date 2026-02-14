@@ -10,14 +10,14 @@ import logging
 from typing import Any, BinaryIO, Dict, Optional, Union, cast
 
 import mwclient
-from mwclient.errors import APIError
 from mwclient.client import Site
+from mwclient.errors import APIError
 
 from .api_errors import (
-    FileExistError,
-    UploadByUrlDisabledError,
-    InsufficientPermissionError,
     DuplicateFileError,
+    FileExistError,
+    InsufficientPermissionError,
+    UploadByUrlDisabledError,
 )
 
 logger = logging.getLogger(__name__)
@@ -204,7 +204,9 @@ class UploadHandler:
             return {"success": False, "error": "exists"}
 
         except InsufficientPermissionError:
-            logger.error(f"Insufficient permissions to upload the file for user {self.site.username} on {self.site.host}")
+            logger.error(
+                f"Insufficient permissions to upload the file for user {self.site.username} on {self.site.host}"
+            )
             return {"success": False, "error": "permission_denied"}
 
         except UploadByUrlDisabledError:

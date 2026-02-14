@@ -1,11 +1,16 @@
 """
-MediaWiki API wrapper using mwclient.
+NC Commons-specific API operations.
 
-This module provides classes for interacting with NC Commons and Wikipedia
-through the MediaWiki API.
+This module provides the NCCommonsAPI class that extends WikiAPI with
+NC Commons-specific functionality, primarily for retrieving file information
+and URLs for files hosted on nccommons.org.
+
+NC Commons is a free media file repository similar to Wikimedia Commons,
+hosting educational content that can be imported to Wikipedia.
 """
 
 import logging
+from typing import Optional
 
 from .main_api import WikiAPI
 
@@ -16,32 +21,60 @@ class NCCommonsAPI(WikiAPI):
     """
     API wrapper for NC Commons operations.
 
-    Provides methods specific to fetching files and information from NC Commons.
+    Provides methods specific to fetching files and information from
+    NC Commons (nccommons.org). This is used as the source for files
+    that will be imported to various Wikipedia language editions.
+
+    Example:
+        >>> api = NCCommonsAPI("username", "password")
+        >>> url = api.get_image_url("Example.jpg")
+        >>> print(url)
+        'https://nccommons.org/images/Example.jpg'
+        >>> description = api.get_file_description("Example.jpg")
     """
 
-    def __init__(self, username: str, password: str):
+    def __init__(self, username: str, password: str) -> None:
         """
         Initialize NC Commons API connection.
 
         Args:
-            username: NC Commons username
-            password: NC Commons password
+            username: NC Commons username.
+            password: NC Commons password.
+
+        Example:
+            >>> api = NCCommonsAPI("MyBot", "password123")
+            >>> # Connected to nccommons.org
         """
         super().__init__("nccommons.org", username, password)
 
     def get_image_url(self, filename: str) -> str:
         """
-        Get the direct URL to an image file.
+        Get the direct download URL for an image file.
+
+        Retrieves the full URL that can be used to download the original
+        file from NC Commons. This URL is used for importing files to Wikipedia.
 
         Args:
-            filename: Image filename (with or without 'File:' prefix)
+            filename: Image filename, with or without 'File:' prefix.
+                Both "Example.jpg" and "File:Example.jpg" are valid.
 
         Returns:
-            Direct URL to the image file
+            Direct URL to the original file on NC Commons servers.
 
         Raises:
-            FileNotFoundError: If the file does not exist or has no imageinfo
+            FileNotFoundError: If the file does not exist on NC Commons,
+                or if the file has no image info (e.g., deleted file).
+
+        Example:
+            >>> url = api.get_image_url("Example.jpg")
+            >>> url
+            'https://upload.nccommons.org/wikipedia/commons/.../Example.jpg'
+
+        Note:
+            The returned URL may point to a CDN or file storage server
+            rather than the main nccommons.org domain.
         """
+        # Normalize filename with File: prefix
         if not filename.lower().startswith("file:"):
             filename = f"File:{filename}"
 
@@ -55,7 +88,8 @@ class NCCommonsAPI(WikiAPI):
             raise FileNotFoundError(f"No image info available for: {filename}")
 
         try:
-            return page.imageinfo["url"]
+            url: str = page.imageinfo["url"]
+            return url
         except (KeyError, TypeError) as e:
             raise FileNotFoundError(f"No URL available for file: {filename}") from e
 
@@ -63,12 +97,27 @@ class NCCommonsAPI(WikiAPI):
         """
         Get the file description page content.
 
+        Retrieves the wikitext content of the file's description page
+        on NC Commons. This typically includes license information,
+        source details, and categories.
+
         Args:
-            filename: Image filename (with or without 'File:' prefix)
+            filename: Image filename, with or without 'File:' prefix.
 
         Returns:
-            File description page wikitext
+            Wikitext content of the file description page.
+
+        Example:
+            >>> desc = api.get_file_description("Example.jpg")
+            >>> "{{Information" in desc
+            True
+
+        Note:
+            The returned description may contain NC Commons-specific
+            categories that should be removed or replaced before
+            uploading to Wikipedia.
         """
+        # Normalize filename with File: prefix
         if not filename.lower().startswith("file:"):
             filename = f"File:{filename}"
 

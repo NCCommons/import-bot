@@ -10,13 +10,12 @@ import urllib.request
 
 from dotenv import load_dotenv
 
-
 load_dotenv()  # Load environment variables from .env file
 # Add project root to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from src.wiki_api import WikipediaAPI  # noqa: E402
 from src.utils.temporary_handler import TemporaryDownloadFile  # noqa: E402
+from src.wiki_api import WikipediaAPI  # noqa: E402
 
 
 def main():

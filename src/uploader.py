@@ -11,8 +11,8 @@ import urllib.request
 
 from .database import Database
 from .parsers import remove_categories
-from .wiki_api import NCCommonsAPI, WikipediaAPI
 from .utils.temporary_handler import TemporaryDownloadFile
+from .wiki_api import NCCommonsAPI, WikipediaAPI
 
 logger = logging.getLogger(__name__)
 

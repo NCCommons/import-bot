@@ -55,7 +55,7 @@ class TestWikiAPI:
         api = WikiAPI("test.wikipedia.org")
 
         # Verify UploadHandler is NOT initialized (no credentials)
-        assert not hasattr(api, 'login_done') or api.login_done is False
+        assert not hasattr(api, "login_done") or api.login_done is False
 
     @patch("src.wiki_api.main_api.Site")
     def test_wiki_api_only_username(self, mock_site_class):

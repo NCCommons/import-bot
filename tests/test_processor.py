@@ -313,7 +313,11 @@ class TestPageProcessor:
         mock_wiki_api.get_page_text.return_value = page_text
         mock_wiki_api.lang = "en"
         # Simulate duplicate with different filename
-        processor.uploader.upload_file.return_value = {"success": False, "error": "duplicate", "duplicate_of": "existing_file.jpg"}
+        processor.uploader.upload_file.return_value = {
+            "success": False,
+            "error": "duplicate",
+            "duplicate_of": "existing_file.jpg",
+        }
 
         result = processor.process_page("Test Page")
 
@@ -345,7 +349,7 @@ class TestPageProcessor:
         # First upload succeeds, second is duplicate
         processor.uploader.upload_file.side_effect = [
             {"success": True},
-            {"success": False, "error": "duplicate", "duplicate_of": "existing.jpg"}
+            {"success": False, "error": "duplicate", "duplicate_of": "existing.jpg"},
         ]
 
         result = processor.process_page("Test Page")

@@ -16,19 +16,17 @@ import logging
 import os
 import sys
 from pathlib import Path
+
 import yaml
 from dotenv import load_dotenv
 from src.database import Database
+from src.logging_config import setup_logging
 from src.parsers import parse_language_list
 from src.processor import PageProcessor
 from src.uploader import FileUploader
 from src.wiki_api import NCCommonsAPI, WikipediaAPI
-from src.logging_config import setup_logging
 
-setup_logging(
-    log_level="DEBUG",
-    name="bot"
-)
+setup_logging(log_level="DEBUG", name="bot")
 
 logger = logging.getLogger("bot")
 
@@ -62,7 +60,9 @@ def load_credentials() -> dict:
             "wiki_password": os.environ["WIKIPEDIA_PASSWORD"],
         }
     except KeyError as e:
-        raise KeyError(f"Missing environment variable: {e}\nPlease ensure all required variables are set in .env file") from e
+        raise KeyError(
+            f"Missing environment variable: {e}\nPlease ensure all required variables are set in .env file"
+        ) from e
 
 
 def process_language(
@@ -181,7 +181,10 @@ def parse_command_line_args():
 
 
 def process_languages(
-    config, credentials, database, nc_api: NCCommonsAPI,
+    config,
+    credentials,
+    database,
+    nc_api: NCCommonsAPI,
     languages,
 ):
 
