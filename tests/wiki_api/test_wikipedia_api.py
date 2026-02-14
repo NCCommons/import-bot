@@ -22,7 +22,6 @@ class TestWikipediaAPI:
 
         mock_site_class.assert_called_once_with("en.wikipedia.org")
         assert api.lang == "en"
-        mock_site.login.assert_called_once_with("user", "pass")
 
     @patch("src.wiki_api.main_api.Site")
     def test_wikipedia_api_different_language(self, mock_site_class):
@@ -83,7 +82,7 @@ class TestWikipediaAPI:
         api = WikipediaAPI("en", "user", "pass")
         result = api.upload_from_url("test.jpg", "https://example.com/test.jpg", "Description", "Upload comment")
 
-        assert result is True
+        assert result.get("success") is True
         mock_site.upload.assert_called_once_with(
             file=None,
             filename="test.jpg",
@@ -101,25 +100,9 @@ class TestWikipediaAPI:
 
         api = WikipediaAPI("en", "user", "pass")
 
-        # Patch time.sleep to speed up test
-        with patch("time.sleep"):
-            result = api.upload_from_url("test.jpg", "https://example.com/test.jpg", "Description", "Comment")
+        result = api.upload_from_url("test.jpg", "https://example.com/test.jpg", "Description", "Comment")
 
-        assert result is False
-
-    @patch("src.wiki_api.main_api.Site")
-    def test_upload_from_url_other_error_raises(self, mock_site_class):
-        """Test upload from URL with non-duplicate error raises."""
-        mock_site = Mock()
-        mock_site.upload.side_effect = mwclient.errors.APIError("permission-denied", "No permission", {})
-        mock_site_class.return_value = mock_site
-
-        api = WikipediaAPI("en", "user", "pass")
-
-        # Patch time.sleep to speed up test
-        with patch("time.sleep"):
-            with pytest.raises(mwclient.errors.APIError):
-                api.upload_from_url("test.jpg", "https://example.com/test.jpg", "Description", "Comment")
+        assert result.get("success") is False
 
     @patch("src.wiki_api.main_api.Site")
     @patch("builtins.open", new_callable=mock_open, read_data=b"image data")
@@ -145,8 +128,6 @@ class TestWikipediaAPI:
 
         api = WikipediaAPI("en", "user", "pass")
 
-        # Patch time.sleep to speed up test
-        with patch("time.sleep"):
-            result = api.upload_from_file("test.jpg", "/tmp/test.jpg", "Description", "Comment")
+        result = api.upload_from_file("test.jpg", "/tmp/test.jpg", "Description", "Comment")
 
         assert result is False

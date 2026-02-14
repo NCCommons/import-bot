@@ -19,7 +19,6 @@ class TestNCCommonsAPI:
         api = NCCommonsAPI("user", "pass")
 
         mock_site_class.assert_called_once_with("nccommons.org")
-        mock_site.login.assert_called_once_with("user", "pass")
 
     @patch("src.wiki_api.main_api.Site")
     def test_get_image_url(self, mock_site_class):

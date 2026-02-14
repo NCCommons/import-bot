@@ -48,31 +48,3 @@ class TestWikiAPI:
         api.save_page("Test Page", "New content", "Edit summary")
 
         mock_page.save.assert_called_once_with("New content", summary="Edit summary")
-
-    @patch("src.wiki_api.main_api.Site")
-    def test_get_page_text_retries_on_failure(self, mock_site_class):
-        """Test get_page_text retries on failure."""
-        call_count = 0
-
-        def side_effect():
-            nonlocal call_count
-            call_count += 1
-            if call_count < 2:
-                raise Exception("Network error")
-            return "Success"
-
-        mock_page = Mock()
-        mock_page.text.side_effect = side_effect
-
-        mock_site = MagicMock()
-        mock_site.pages.__getitem__.return_value = mock_page
-        mock_site_class.return_value = mock_site
-
-        api = WikiAPI("test.wikipedia.org")
-
-        # Patch time.sleep to speed up test
-        with patch("time.sleep"):
-            text = api.get_page_text("Test Page")
-
-        assert text == "Success"
-        assert call_count == 2

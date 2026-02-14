@@ -77,7 +77,7 @@ def mock_wiki_api():
     api.get_pages_with_template.return_value = ["Page 1", "Page 2"]
     api.get_page_text.return_value = "{{NC|test.jpg|caption}}"
     api.save_page.return_value = None
-    api.upload_from_url.return_value = True
+    api.upload_from_url.return_value = {"success": True}
     api.upload_from_file.return_value = True
 
     return api
