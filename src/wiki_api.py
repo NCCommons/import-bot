@@ -6,53 +6,12 @@ through the MediaWiki API.
 """
 
 import logging
-import time
-from functools import wraps
-from typing import Dict, List, Optional
-
 import mwclient
+from typing import List, Optional
+from mwclient.client import Site
+from mwclient.errors import APIError
+
 logger = logging.getLogger(__name__)
-
-
-# Retry decorator implementation
-def retry(max_attempts: int = 3, delay: int = 5, backoff: int = 2):
-    """
-    Decorator to retry functions with exponential backoff.
-
-    Args:
-        max_attempts: Maximum number of retry attempts
-        delay: Initial delay in seconds
-        backoff: Multiplier for exponential backoff
-
-    Returns:
-        Decorated function that retries on failure
-    """
-
-    def decorator(func):
-        @wraps(func)
-        def wrapper(*args, **kwargs):
-            attempt = 0
-            current_delay = delay
-
-            while attempt < max_attempts:
-                try:
-                    return func(*args, **kwargs)
-                except Exception as e:
-                    attempt += 1
-                    if attempt >= max_attempts:
-                        logger.error(f"All {max_attempts} attempts failed for {func.__name__}")
-                        raise
-
-                    logger.warning(
-                        f"Attempt {attempt}/{max_attempts} failed for {func.__name__}: {e}. "
-                        f"Retrying in {current_delay}s..."
-                    )
-                    time.sleep(current_delay)
-                    current_delay *= backoff
-
-        return wrapper
-
-    return decorator
 
 
 class WikiAPI:
@@ -73,7 +32,7 @@ class WikiAPI:
             password: Optional password for login
         """
         logger.info(f"Connecting to {site}")
-        self.site = mwclient.Site(site)
+        self.site = Site(site)
 
         if username and password:
             logger.info(f"Logging in as {username}")
@@ -82,7 +41,6 @@ class WikiAPI:
             # XOR case: exactly one of username/password is provided
             logger.warning("Both username and password are required for login; skipping login")
 
-    @retry(max_attempts=3, delay=5, backoff=2)
     def get_page_text(self, title: str) -> str:
         """
         Get the text content of a page.
@@ -97,7 +55,6 @@ class WikiAPI:
         page = self.site.pages[title]
         return page.text()
 
-    @retry(max_attempts=3, delay=5, backoff=2)
     def save_page(self, title: str, text: str, summary: str):
         """
         Save content to a page.
@@ -129,7 +86,6 @@ class NCCommonsAPI(WikiAPI):
         """
         super().__init__("nccommons.org", username, password)
 
-    @retry(max_attempts=3, delay=5, backoff=2)
     def get_image_url(self, filename: str) -> str:
         """
         Get the direct URL to an image file.
@@ -196,7 +152,6 @@ class WikipediaAPI(WikiAPI):
         site = f"{language_code}.wikipedia.org"
         super().__init__(site, username, password)
 
-    @retry(max_attempts=3, delay=5, backoff=2)
     def get_pages_with_template(self, template: str, limit: int = 5000) -> List[str]:
         """
         Get all pages that transclude a template.
@@ -219,8 +174,7 @@ class WikipediaAPI(WikiAPI):
         logger.info(f"Found {len(pages)} pages")
         return pages
 
-    @retry(max_attempts=3, delay=5, backoff=2)
-    def upload_from_url(self, filename: str, url: str, description: str, comment: str) -> bool:
+    def upload_from_url(self, filename: str, url: str, description: str, comment: str) -> dict:
         """
         Upload a file from URL to Wikipedia.
 
@@ -242,19 +196,22 @@ class WikipediaAPI(WikiAPI):
             result = self.site.upload(file=None, filename=filename, description=description, comment=comment, url=url)
 
             logger.info(f"Upload successful: {filename}")
-            return True
+            return {"success": True}
 
-        except mwclient.errors.APIError as e:
+        except APIError as e:
             error_msg = str(e).lower()
 
             if "duplicate" in error_msg:
                 logger.warning(f"File is duplicate: {filename}")
-                return False
+                return {"success": False, "error": "duplicate"}
+
+            elif "Upload by URL disabled" in error_msg:
+                logger.warning(f"URL upload disabled for {filename}")
+                return {"success": False, "error": "url_disabled"}
 
             logger.error(f"Upload failed: {e}")
-            raise
+            return {"success": False, "error": str(e)}
 
-    @retry(max_attempts=3, delay=5, backoff=2)
     def upload_from_file(self, filename: str, filepath: str, description: str, comment: str) -> bool:
         """
         Upload a file from local filesystem to Wikipedia.
