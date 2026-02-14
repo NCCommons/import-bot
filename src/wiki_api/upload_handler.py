@@ -63,7 +63,7 @@ class UploadHandler:
                 raise UploadByUrlDisabledError()
 
             # Rate limit surface for caller
-            if code in {"ratelimited", "throttled"} or "rate" in code:
+            if code in {"ratelimited", "throttled"}:
                 raise Exception("ratelimited: " + err_info)
 
             # Permission issues
@@ -137,9 +137,6 @@ class UploadHandler:
         data = self.site.raw_call("api", postdata, files)
         info = json.loads(data)
 
-        if file is not None:
-            file.close()
-
         if not info:
             info = {}
 
@@ -171,7 +168,7 @@ class UploadHandler:
         Returns:
             Dictionary with 'success' key indicating result and optional 'error' key for error details
         """
-        filename = filename.removeprefix("File:")  # Ensure filename does not have 'File:' prefix
+        filename = filename.removeprefix("file:").removeprefix("File:")  # Ensure filename does not have 'File:' prefix
 
         try:
             logger.info(f"Uploading file: {filename}")

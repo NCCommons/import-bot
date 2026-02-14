@@ -136,7 +136,7 @@ class FileUploader:
                 comment=comment,
             )
 
-        error = result.get("error")
+        error = result.get("error", "unknown error")
         error_msg = str(error).lower()
 
         if result.get("success"):
