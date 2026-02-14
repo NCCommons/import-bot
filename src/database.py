@@ -74,8 +74,7 @@ class Database:
                     language TEXT NOT NULL,
                     uploaded_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                     status TEXT NOT NULL,
-                    error TEXT,
-                    UNIQUE(filename, language)
+                    error TEXT
                 );
 
                 CREATE TABLE IF NOT EXISTS pages (
@@ -84,8 +83,7 @@ class Database:
                     language TEXT NOT NULL,
                     processed_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                     templates_found INTEGER,
-                    files_uploaded INTEGER,
-                    UNIQUE(page_title, language)
+                    files_uploaded INTEGER
                 );
 
                 CREATE INDEX IF NOT EXISTS idx_uploads_lang ON uploads(language);
@@ -109,8 +107,7 @@ class Database:
         with self._get_connection() as conn:
             conn.execute(
                 """
-                INSERT OR REPLACE INTO uploads
-                (filename, language, status, error, uploaded_at)
+                INSERT INTO uploads (filename, language, status, error, uploaded_at)
                 VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
             """,
                 (filename, language, status, error),
@@ -131,8 +128,7 @@ class Database:
         with self._get_connection() as conn:
             conn.execute(
                 """
-                INSERT OR REPLACE INTO pages
-                (page_title, language, templates_found, files_uploaded, processed_at)
+                INSERT INTO pages (page_title, language, templates_found, files_uploaded, processed_at)
                 VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
             """,
                 (page_title, language, templates_found, files_uploaded),

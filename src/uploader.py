@@ -7,6 +7,7 @@ to Wikipedia, with appropriate error handling and database recording.
 
 import logging
 import tempfile
+import urllib.parse
 import urllib.request
 from pathlib import Path
 
@@ -96,7 +97,8 @@ class FileUploader:
                 # URL upload not allowed or failed, try file upload
                 error_msg = str(url_error).lower()
 
-                if "url" in error_msg or "copyupload" in error_msg:
+                #  TODO: find the specific error message for copyupload
+                if "copyupload" in error_msg:
                     logger.info(f"URL upload not allowed, trying file upload: {filename}")
                     return self._upload_via_download(filename, file_url, description, comment, lang)
                 else:
@@ -127,6 +129,11 @@ class FileUploader:
         temp_file = None
 
         try:
+            # Validate URL scheme
+            parsed_url = urllib.parse.urlparse(url)
+            if parsed_url.scheme != "https":
+                raise ValueError(f"Invalid URL scheme '{parsed_url.scheme}' for {filename}: only HTTPS is allowed")
+
             # Download to temporary file
             logger.info(f"Downloading file: {filename}")
             temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".tmp")
