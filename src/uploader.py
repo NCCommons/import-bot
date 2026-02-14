@@ -84,6 +84,7 @@ class FileUploader:
             description=description,
             comment=comment,
         )
+
         if result.get("success"):
             self.db.record_upload(filename, lang, "success")
             logger.info(f"Upload successful (URL method): {filename}")
