@@ -33,17 +33,26 @@ class WikiAPI:
         """
         logger.info(f"Connecting to {site}")
         self.site = Site(site)
+        self.login_done = False
+        self.username = username
+        self.password = password
 
         if not username or not password:
             # XOR case: exactly one of username/password is provided
             logger.warning("Both username and password are required for login; skipping login")
             return
+
+    def ensure_logged_in(self) -> None:
+        """
+        Ensure that the user is logged in before performing actions that require authentication.
+        """
         try:
-            logger.info(f"Logging in as {username}")
-            self.site.login(username, password)
+            logger.info(f"Logging in as {self.username}")
+            self.site.login(self.username, self.password)
+            self.login_done = True
         except mwclient.errors.LoginError as e:
-            logger.error(f"Login failed for {username}: {e}")
-            raise
+            logger.error(f"Login failed for {self.username}: {e}")
+            return False
 
     def get_page_text(self, title: str) -> str:
         """
@@ -69,8 +78,14 @@ class WikiAPI:
             summary: Edit summary
         """
         logger.info(f"Saving page: {title}")
+        self.ensure_logged_in()
+
+        if not self.login_done:
+            logger.error("Cannot save page without successful login")
+            return False
+
         page = self.site.pages[title]
-        page.save(text, summary=summary)
+        return page.save(text, summary=summary)
 
 
 class NCCommonsAPI(WikiAPI):
