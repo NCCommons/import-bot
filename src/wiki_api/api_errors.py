@@ -62,7 +62,7 @@ class DuplicateFileError(Exception):
         Returns:
             A formatted string describing the duplicate file situation.
         """
-        return f"The file '{self.file_name}' already exists " f"under a different name: '{self.duplicate_name}'."
+        return f"The file '{self.file_name}' already exists in a different name: '{self.duplicate_name}'."
 
 
 class FileExistError(Exception):
