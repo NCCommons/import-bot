@@ -4,18 +4,17 @@ Test script for uploading a file to Wikipedia from URL.
 This script tests the upload_from_url functionality directly using the WikipediaAPI class.
 """
 
-import logging
 import os
 import sys
+
 from dotenv import load_dotenv
+
 load_dotenv()  # Load environment variables from .env file
 # Add project root to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from src.wiki_api import WikipediaAPI
 from src.logging_config import setup_logging
-
-logging.getLogger("mwclient").setLevel(logging.DEBUG)  # Set mwclient to debug for detailed API interaction logs
+from src.wiki_api import WikipediaAPI
 
 setup_logging(
     "INFO",
@@ -31,7 +30,7 @@ def main():
     image_url = "https://nccommons.org/m/a/ae/President_Jacbo_Zuma_attends_The_New_Age_and_SABC_Business_briefing%2C_16_Mar_2012.jpg"
 
     # Target filename on Wikipedia
-    target_filename = "President Jacbo Zuma attends The New Age and SABC Business briefing, 16 Mar 2012.jpg"
+    target_filename = "File:President Jacbo Zuma attends The New Age and SABC Business briefing, 16 Mar 2012.jpg"
 
     # File description (wikitext)
     description = """== Summary ==
@@ -49,7 +48,7 @@ def main():
     # Get credentials from environment variables
     username = os.environ.get("WIKIPEDIA_USERNAME")
     password = os.environ.get("WIKIPEDIA_PASSWORD")
-    lang = os.environ.get("WIKI_LANG", "af")  # Default to Arabic Wikipedia
+    lang = os.environ.get("WIKI_LANG", "af")
 
     if not username or not password:
         print("Error: Please set WIKIPEDIA_USERNAME and WIKIPEDIA_PASSWORD environment variables")
@@ -69,7 +68,7 @@ def main():
     wiki_api = WikipediaAPI(
         language_code=lang,
         username=username,
-        password=password
+        password=password,
     )
 
     print("Connected successfully!")
@@ -81,14 +80,14 @@ def main():
         filename=target_filename,
         url=image_url,
         description=description,
-        comment=comment
+        comment=comment,
     )
 
-    if result:
+    if result.get("success"):
         print("✓ Upload successful!")
         print(f"File uploaded to: https://{lang}.wikipedia.org/wiki/File:{target_filename}")
     else:
-        print("✗ Upload returned False (file may be a duplicate)")
+        print(f"✗ Upload failed: {result.get('error')}")
 
 
 if __name__ == "__main__":

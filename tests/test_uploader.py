@@ -2,13 +2,10 @@
 Tests for file uploader module.
 """
 
-from pathlib import Path
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import Mock, patch
 
 import pytest
-from src.database import Database
 from src.uploader import FileUploader
-from src.wiki_api import NCCommonsAPI, WikipediaAPI
 
 
 class TestFileUploader:
@@ -44,7 +41,7 @@ class TestFileUploader:
         # Setup mocks
         mock_nc_api.get_image_url.return_value = "https://nccommons.org/image.jpg"
         mock_nc_api.get_file_description.return_value = "Description\n[[Category:Test]]"
-        mock_wiki_api.upload_from_url.return_value = True
+        mock_wiki_api.upload_from_url.return_value = {"success": True}
         mock_wiki_api.lang = "en"
 
         result = uploader.upload_file("test.jpg")
@@ -65,7 +62,7 @@ class TestFileUploader:
         """Test handling duplicate file."""
         mock_nc_api.get_image_url.return_value = "https://nccommons.org/dup.jpg"
         mock_nc_api.get_file_description.return_value = "Description"
-        mock_wiki_api.upload_from_url.return_value = False  # Duplicate
+        mock_wiki_api.upload_from_url.return_value = {"success": False, "error": "duplicate"}
         mock_wiki_api.lang = "en"
 
         result = uploader.upload_file("dup.jpg")
@@ -74,8 +71,8 @@ class TestFileUploader:
 
         # Should be recorded as duplicate
         with temp_db._get_connection() as conn:
-            record = conn.execute("SELECT status FROM uploads WHERE filename='dup.jpg'").fetchone()
-            assert record["status"] == "duplicate"
+            record = conn.execute("SELECT error FROM uploads WHERE filename='dup.jpg'").fetchone()
+            assert record["error"] == "duplicate"
 
     @patch("urllib.request.urlretrieve")
     @patch("tempfile.NamedTemporaryFile")
@@ -89,7 +86,7 @@ class TestFileUploader:
         mock_temp.name = "/tmp/test123.tmp"
         mock_tempfile.return_value = mock_temp
 
-        mock_wiki_api.upload_from_file.return_value = True
+        mock_wiki_api.upload_from_file.return_value = {"success": True}
 
         result = uploader._upload_via_download(
             "test.jpg", "https://example.com/test.jpg", "Description", "Comment", "en"
@@ -117,7 +114,7 @@ class TestFileUploader:
         mock_temp.name = "/tmp/test123.tmp"
         mock_tempfile.return_value = mock_temp
 
-        mock_wiki_api.upload_from_file.return_value = False  # Duplicate
+        mock_wiki_api.upload_from_file.return_value = {"success": False, "error": "duplicate"}
 
         result = uploader._upload_via_download("dup.jpg", "https://example.com/dup.jpg", "Description", "Comment", "en")
 
@@ -185,7 +182,7 @@ class TestFileUploader:
         """Test that file upload processes description correctly."""
         mock_nc_api.get_image_url.return_value = "https://example.com/test.jpg"
         mock_nc_api.get_file_description.return_value = "Original\n[[Category:OldCat]]"
-        mock_wiki_api.upload_from_url.return_value = True
+        mock_wiki_api.upload_from_url.return_value = {"success": True}
         mock_wiki_api.lang = "en"
 
         uploader.upload_file("test.jpg")
@@ -204,7 +201,7 @@ class TestFileUploader:
         """Test that upload uses comment from config."""
         mock_nc_api.get_image_url.return_value = "https://example.com/test.jpg"
         mock_nc_api.get_file_description.return_value = "Description"
-        mock_wiki_api.upload_from_url.return_value = True
+        mock_wiki_api.upload_from_url.return_value = {"success": True}
         mock_wiki_api.lang = "en"
 
         uploader.upload_file("test.jpg")
@@ -220,7 +217,7 @@ class TestFileUploader:
         mock_wiki_api.lang = "ar"  # Arabic Wikipedia
         mock_nc_api.get_image_url.return_value = "https://example.com/test.jpg"
         mock_nc_api.get_file_description.return_value = "Description"
-        mock_wiki_api.upload_from_url.return_value = True
+        mock_wiki_api.upload_from_url.return_value = {"success": True}
 
         uploader = FileUploader(mock_nc_api, mock_wiki_api, temp_db, sample_config)
         uploader.upload_file("test.jpg")
@@ -235,8 +232,8 @@ class TestFileUploader:
         """Test that copyupload error triggers fallback to file download."""
         mock_nc_api.get_image_url.return_value = "https://example.com/test.jpg"
         mock_nc_api.get_file_description.return_value = "Description"
-        mock_wiki_api.upload_from_url.side_effect = Exception("copyupload disabled")
-        mock_wiki_api.upload_from_file.return_value = True
+        mock_wiki_api.upload_from_url.return_value = {"success": False, "error": "url_disabled"}
+        mock_wiki_api.upload_from_file.return_value = {"success": True}
         mock_wiki_api.lang = "en"
 
         with patch("urllib.request.urlretrieve"):
@@ -252,10 +249,10 @@ class TestFileUploader:
         mock_nc_api.get_image_url.return_value = "https://nccommons.org/file.jpg"
         mock_nc_api.get_file_description.return_value = "Description"
         mock_wiki_api.upload_from_url.side_effect = Exception("URL upload not allowed")
-        mock_wiki_api.upload_from_file.return_value = True
+        mock_wiki_api.upload_from_file.return_value = {"success": True}
         mock_wiki_api.lang = "en"
 
-        with patch("urllib.request.urlretrieve") as mock_retrieve:
+        with patch("urllib.request.urlretrieve") as _mock_retrieve:
             with patch("pathlib.Path.unlink"):
                 result = uploader.upload_file("file.jpg")
 
