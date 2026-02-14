@@ -157,7 +157,13 @@ def main():
         config = yaml.safe_load(f)
 
     # Setup logging
-    setup_logging(config["logging"])
+    logging_config = config["logging"]
+    setup_logging(
+        logging_config.get("level", "INFO"),
+        logging_config.get("file", "./logs/bot.log"),
+        logging_config.get("max_bytes", 10485760),
+        logging_config.get("backup_count", 5),
+    )
 
     logger = logging.getLogger(__name__)
     logger.info("=" * 60)

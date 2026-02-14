@@ -11,7 +11,7 @@ from pathlib import Path
 import colorlog
 
 
-def setup_logging(config: dict):
+def setup_logging(log_level: str, log_file: str, max_bytes: int, backup_count: int):
     """
     Configure logging based on configuration.
 
@@ -20,20 +20,17 @@ def setup_logging(config: dict):
     logs remain plain text.
 
     Args:
-        config: Logging configuration dictionary with keys:
-            - level: Log level (DEBUG, INFO, WARNING, ERROR, CRITICAL)
-            - file: Path to log file
-            - max_bytes: Maximum size of log file before rotation
-            - backup_count: Number of backup files to keep
+        log_level: Log level string (DEBUG, INFO, WARNING, ERROR, CRITICAL)
+        log_file: Path to log file
+        max_bytes: Maximum size of log file before rotation
+        backup_count: Number of backup files to keep
     """
-    # Get logging configuration
-    log_level = getattr(logging, config.get("level", "INFO").upper())
-    log_file = Path(config.get("file", "./logs/bot.log"))
-    max_bytes = config.get("max_bytes", 10485760)  # 10MB default
-    backup_count = config.get("backup_count", 5)
+    # Convert log level string to logging constant
+    level = getattr(logging, log_level.upper())
+    log_file_path = Path(log_file)
 
     # Create logs directory
-    log_file.parent.mkdir(parents=True, exist_ok=True)
+    log_file_path.parent.mkdir(parents=True, exist_ok=True)
 
     # File formatter (plain text for log files)
     file_formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
@@ -51,7 +48,7 @@ def setup_logging(config: dict):
     )
 
     # File handler with rotation
-    file_handler = RotatingFileHandler(log_file, maxBytes=max_bytes, backupCount=backup_count)
+    file_handler = RotatingFileHandler(log_file_path, maxBytes=max_bytes, backupCount=backup_count)
     file_handler.setFormatter(file_formatter)
 
     # Console handler with colors
@@ -60,7 +57,7 @@ def setup_logging(config: dict):
 
     # Configure root logger
     root_logger = logging.getLogger()
-    root_logger.setLevel(log_level)
+    root_logger.setLevel(level)
     root_logger.addHandler(file_handler)
     root_logger.addHandler(console_handler)
 
