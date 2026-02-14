@@ -12,7 +12,7 @@ from src.wiki_api import WikipediaAPI
 class TestWikipediaAPI:
     """Tests for WikipediaAPI class."""
 
-    @patch("src.wiki_api.Site")
+    @patch("src.wiki_api.main_api.Site")
     def test_wikipedia_api_initialization(self, mock_site_class):
         """Test WikipediaAPI initializes with correct site."""
         mock_site = Mock()
@@ -24,7 +24,7 @@ class TestWikipediaAPI:
         assert api.lang == "en"
         mock_site.login.assert_called_once_with("user", "pass")
 
-    @patch("src.wiki_api.Site")
+    @patch("src.wiki_api.main_api.Site")
     def test_wikipedia_api_different_language(self, mock_site_class):
         """Test WikipediaAPI with different language code."""
         mock_site = Mock()
@@ -35,7 +35,7 @@ class TestWikipediaAPI:
         mock_site_class.assert_called_once_with("ar.wikipedia.org")
         assert api.lang == "ar"
 
-    @patch("src.wiki_api.Site")
+    @patch("src.wiki_api.main_api.Site")
     def test_get_pages_with_template(self, mock_site_class):
         """Test getting pages that use a template."""
         # Create mock pages
@@ -57,7 +57,7 @@ class TestWikipediaAPI:
         assert pages == ["Page 1", "Page 2"]
         mock_site.pages.__getitem__.assert_called_once_with("Template:NC")
 
-    @patch("src.wiki_api.Site")
+    @patch("src.wiki_api.main_api.Site")
     def test_get_pages_with_template_adds_prefix(self, mock_site_class):
         """Test that Template: prefix is added if missing."""
         mock_template = Mock()
@@ -73,7 +73,7 @@ class TestWikipediaAPI:
         # Should not add duplicate prefix
         mock_site.pages.__getitem__.assert_called_once_with("Template:NC")
 
-    @patch("src.wiki_api.Site")
+    @patch("src.wiki_api.main_api.Site")
     def test_upload_from_url_success(self, mock_site_class):
         """Test successful upload from URL."""
         mock_site = Mock()
@@ -92,7 +92,7 @@ class TestWikipediaAPI:
             url="https://example.com/test.jpg",
         )
 
-    @patch("src.wiki_api.Site")
+    @patch("src.wiki_api.main_api.Site")
     def test_upload_from_url_duplicate(self, mock_site_class):
         """Test upload from URL with duplicate file."""
         mock_site = Mock()
@@ -107,7 +107,7 @@ class TestWikipediaAPI:
 
         assert result is False
 
-    @patch("src.wiki_api.Site")
+    @patch("src.wiki_api.main_api.Site")
     def test_upload_from_url_other_error_raises(self, mock_site_class):
         """Test upload from URL with non-duplicate error raises."""
         mock_site = Mock()
@@ -121,7 +121,7 @@ class TestWikipediaAPI:
             with pytest.raises(mwclient.errors.APIError):
                 api.upload_from_url("test.jpg", "https://example.com/test.jpg", "Description", "Comment")
 
-    @patch("src.wiki_api.Site")
+    @patch("src.wiki_api.main_api.Site")
     @patch("builtins.open", new_callable=mock_open, read_data=b"image data")
     def test_upload_from_file_success(self, mock_file, mock_site_class):
         """Test successful upload from file."""
@@ -135,7 +135,7 @@ class TestWikipediaAPI:
         assert result is True
         mock_file.assert_called_once_with("/tmp/test.jpg", "rb")
 
-    @patch("src.wiki_api.Site")
+    @patch("src.wiki_api.main_api.Site")
     @patch("builtins.open", new_callable=mock_open, read_data=b"image data")
     def test_upload_from_file_duplicate(self, mock_file, mock_site_class):
         """Test upload from file with duplicate."""

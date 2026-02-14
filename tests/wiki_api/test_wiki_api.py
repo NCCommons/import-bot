@@ -9,7 +9,7 @@ from src.wiki_api import WikiAPI
 class TestWikiAPI:
     """Tests for WikiAPI base class."""
 
-    @patch("src.wiki_api.Site")
+    @patch("src.wiki_api.main_api.Site")
     def test_wiki_api_initialization(self, mock_site_class):
         """Test WikiAPI initializes connection."""
         mock_site = Mock()
@@ -20,7 +20,7 @@ class TestWikiAPI:
         mock_site_class.assert_called_once_with("test.wikipedia.org")
         assert api.site == mock_site
 
-    @patch("src.wiki_api.Site")
+    @patch("src.wiki_api.main_api.Site")
     def test_get_page_text(self, mock_site_class):
         """Test getting page text."""
         mock_page = Mock()
@@ -36,7 +36,7 @@ class TestWikiAPI:
         assert text == "Page content"
         mock_site.pages.__getitem__.assert_called_once_with("Test Page")
 
-    @patch("src.wiki_api.Site")
+    @patch("src.wiki_api.main_api.Site")
     def test_save_page(self, mock_site_class):
         """Test saving page."""
         mock_page = Mock()
@@ -49,7 +49,7 @@ class TestWikiAPI:
 
         mock_page.save.assert_called_once_with("New content", summary="Edit summary")
 
-    @patch("src.wiki_api.Site")
+    @patch("src.wiki_api.main_api.Site")
     def test_get_page_text_retries_on_failure(self, mock_site_class):
         """Test get_page_text retries on failure."""
         call_count = 0

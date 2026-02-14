@@ -7,7 +7,7 @@ through the MediaWiki API.
 
 import logging
 import mwclient
-from typing import List, Optional
+from typing import Optional
 from mwclient.client import Site
 from mwclient.errors import APIError
 

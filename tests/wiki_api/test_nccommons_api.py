@@ -10,7 +10,7 @@ from src.wiki_api import NCCommonsAPI
 class TestNCCommonsAPI:
     """Tests for NCCommonsAPI class."""
 
-    @patch("src.wiki_api.Site")
+    @patch("src.wiki_api.main_api.Site")
     def test_nc_commons_api_initialization(self, mock_site_class):
         """Test NCCommonsAPI initializes with nccommons.org."""
         mock_site = Mock()
@@ -21,7 +21,7 @@ class TestNCCommonsAPI:
         mock_site_class.assert_called_once_with("nccommons.org")
         mock_site.login.assert_called_once_with("user", "pass")
 
-    @patch("src.wiki_api.Site")
+    @patch("src.wiki_api.main_api.Site")
     def test_get_image_url(self, mock_site_class):
         """Test getting image URL."""
         mock_page = Mock()
@@ -37,7 +37,7 @@ class TestNCCommonsAPI:
         assert url == "https://example.com/image.jpg"
         mock_site.pages.__getitem__.assert_called_once_with("File:test.jpg")
 
-    @patch("src.wiki_api.Site")
+    @patch("src.wiki_api.main_api.Site")
     def test_get_image_url_adds_file_prefix(self, mock_site_class):
         """Test get_image_url adds File: prefix if missing."""
         mock_page = Mock()
@@ -54,7 +54,7 @@ class TestNCCommonsAPI:
         assert url == "https://example.com/image.jpg"
         mock_site.pages.__getitem__.assert_called_once_with("File:test.jpg")
 
-    @patch("src.wiki_api.Site")
+    @patch("src.wiki_api.main_api.Site")
     def test_get_file_description(self, mock_site_class):
         """Test getting file description."""
         mock_page = Mock()
