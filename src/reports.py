@@ -9,7 +9,7 @@ import json
 import logging
 from pathlib import Path
 
-from src.database import Database
+from .database import Database
 
 logger = logging.getLogger(__name__)
 
