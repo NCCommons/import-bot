@@ -129,7 +129,7 @@ def process_language(
     return stats
 
 
-def retrieve_language_list(args, config, nc_api):
+def retrieve_language_list(args, language_page, nc_api):
     logger = logging.getLogger(__name__)
     languages = {}
     # Determine which languages to process
@@ -139,7 +139,6 @@ def retrieve_language_list(args, config, nc_api):
         logger.info(f"Processing {len(languages)} specified languages: {languages}")
     else:
         # Get all languages from NC Commons page
-        language_page = config["nc_commons"]["language_page"]
         page_text = nc_api.get_page_text(language_page)
         languages = parse_language_list(page_text)
         logger.info(f"Processing {len(languages)} languages from {language_page}")
@@ -242,7 +241,8 @@ def main():
     # Connect to NC Commons
     nc_api = NCCommonsAPI(credentials["nc_username"], credentials["nc_password"])
 
-    languages = retrieve_language_list(args, config, nc_api)
+    language_page = config["nc_commons"]["language_page"]
+    languages = retrieve_language_list(args, language_page, nc_api)
 
     process_languages(config, credentials, database, nc_api, languages)
 
