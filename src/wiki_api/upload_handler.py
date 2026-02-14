@@ -13,7 +13,7 @@ import mwclient
 from mwclient.client import Site
 
 from .api_errors import (
-    FileExistsError,
+    FileExistError,
     UploadByUrlDisabledError,
     InsufficientPermission,
     DuplicateFileError,
@@ -87,7 +87,7 @@ class UploadHandler:
             raise DuplicateFileError(kwargs.get("filename", ""), duplicate)
 
         if "exists" in warnings:
-            raise FileExistsError(kwargs.get("filename", ""))
+            raise FileExistError(kwargs.get("filename", ""))
 
         return True
 
@@ -192,7 +192,7 @@ class UploadHandler:
             logger.warning(f"Duplicate file detected: {e.file_name} is a duplicate of {e.duplicate_name}")
             return {"success": False, "error": "duplicate", "duplicate_of": e.duplicate_name}
 
-        except FileExistsError as e:
+        except FileExistError as e:
             logger.warning(f"File already exists: {e.file_name}")
             return {"success": False, "error": "exists"}
 

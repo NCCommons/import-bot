@@ -16,7 +16,7 @@ class DuplicateFileError(Exception):
         return f"The file '{self.file_name}' already exists in a different name: '{self.duplicate_name}'."
 
 
-class FileExistsError(Exception):
+class FileExistError(Exception):
     """
     Raised when trying to upload a file that already exists.
 
