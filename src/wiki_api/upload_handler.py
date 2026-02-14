@@ -58,9 +58,12 @@ class UploadHandler:
             err_info = info["error"].get("info", "")
 
             logger.error(f"API error: {info}")
-
+            error_infos = [
+                "uploads by url are not allowed from this domain.",
+                "upload by url disabled.",
+            ]
             # {'error': {'code': 'copyuploaddisabled', 'info': 'Upload by URL disabled.', '*': ''}}
-            if code == "copyuploaddisabled" or "upload by url disabled" in err_info.lower():
+            if code == "copyuploaddisabled" or any(e in err_info.lower() for e in error_infos):
                 raise UploadByUrlDisabledError()
 
             # Rate limit surface for caller
