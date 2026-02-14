@@ -11,7 +11,6 @@ from functools import wraps
 from typing import Dict, List, Optional
 
 import mwclient
-
 logger = logging.getLogger(__name__)
 
 
