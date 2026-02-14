@@ -88,6 +88,7 @@ def main():
 
     if result.get("success"):
         print("✓ Upload successful!")
+        target_filename = target_filename.replace("File:", "").replace(" ", "_")
         print(f"File uploaded to: https://{lang}.wikipedia.org/wiki/File:{target_filename}")
         return True
 

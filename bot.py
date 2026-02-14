@@ -44,7 +44,7 @@ def load_credentials() -> dict:
         load_dotenv(env_file)
     else:
         raise FileNotFoundError(
-            f"Environment file not found: {env_file}\n" f"Please copy .env.example to .env and fill in your credentials"
+            f"Environment file not found: {env_file}\nPlease copy .env.example to .env and fill in your credentials"
         )
 
     # Get credentials from environment variables
@@ -56,9 +56,7 @@ def load_credentials() -> dict:
             "wiki_password": os.environ["WIKIPEDIA_PASSWORD"],
         }
     except KeyError as e:
-        raise KeyError(
-            f"Missing environment variable: {e}\n" f"Please ensure all required variables are set in {env_file}"
-        )
+        raise KeyError(f"Missing environment variable: {e}\nPlease ensure all required variables are set in .env file") from e
 
 
 def process_language(
