@@ -158,15 +158,10 @@ class PageProcessor:
                     files_changed += 1
                     files_duplicate += 1
                     replacements[template.original_text] = result["replacement"]
-                    logger.info(
-                        f"File is duplicate of {result['duplicate_of']}, using existing"
-                    )
+                    logger.info(f"File is duplicate of {result['duplicate_of']}, using existing")
 
                 else:
-                    logger.info(
-                        f"File not uploaded (error: {result.get('error')}): "
-                        f"{template.filename}"
-                    )
+                    logger.info(f"File not uploaded (error: {result.get('error')}): " f"{template.filename}")
 
             except Exception as e:
                 logger.error(f"Exception uploading file {template.filename}: {e}")
@@ -326,8 +321,6 @@ class PageProcessor:
             files_uploaded: Number of files successfully uploaded.
         """
         try:
-            self.db.record_page_processing(
-                page_title, self.wiki_api.lang, templates_found, files_uploaded
-            )
+            self.db.record_page_processing(page_title, self.wiki_api.lang, templates_found, files_uploaded)
         except Exception as e:
             logger.error(f"Failed to record page processing: {e}")

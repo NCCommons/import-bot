@@ -120,9 +120,7 @@ class UploadHandler:
             logger.error(f"API error: {info}")
 
             # Check for URL upload disabled
-            if code == "copyuploaddisabled" or any(
-                e in err_info.lower() for e in self.URL_DISABLED_MESSAGES
-            ):
+            if code == "copyuploaddisabled" or any(e in err_info.lower() for e in self.URL_DISABLED_MESSAGES):
                 raise UploadByUrlDisabledError()
 
             # Surface rate limiting for caller to handle (e.g., retry)
@@ -232,9 +230,7 @@ class UploadHandler:
         response: Dict[str, Any] = info
 
         # Clear deprecation notices from error field
-        if "for notice of API deprecations and breaking changes." in info.get("error", {}).get(
-            "*", ""
-        ):
+        if "for notice of API deprecations and breaking changes." in info.get("error", {}).get("*", ""):
             info["error"]["*"] = ""
 
         # Check for successful upload
@@ -307,9 +303,7 @@ class UploadHandler:
             return {"success": True}
 
         except DuplicateFileError as e:
-            logger.warning(
-                f"Duplicate file detected: {e.file_name} is a duplicate of {e.duplicate_name}"
-            )
+            logger.warning(f"Duplicate file detected: {e.file_name} is a duplicate of {e.duplicate_name}")
             return {
                 "success": False,
                 "error": "duplicate",
@@ -321,10 +315,7 @@ class UploadHandler:
             return {"success": False, "error": "exists"}
 
         except InsufficientPermissionError:
-            logger.error(
-                f"Insufficient permissions to upload for user {self.site.username} "
-                f"on {self.site.host}"
-            )
+            logger.error(f"Insufficient permissions to upload for user {self.site.username} " f"on {self.site.host}")
             return {"success": False, "error": "permission_denied"}
 
         except UploadByUrlDisabledError:
