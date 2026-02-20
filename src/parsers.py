@@ -93,8 +93,12 @@ class NCTemplate:
         """
         use_filename = filename or self.filename
         # Normalize filename by removing 'File:' prefix if present
-        use_filename = use_filename.removeprefix("File:").removeprefix("file:")
-        return f"[[File:{use_filename}|thumb|{self.caption}]]"
+        if use_filename.lower().startswith("file:"):
+            use_filename = use_filename[5:]
+
+        if self.caption:
+            return f"[[File:{use_filename}|thumb|{self.caption}]]"
+        return f"[[File:{use_filename}|thumb]]"
 
 
 def parse_language_list(page_text: str) -> List[str]:
