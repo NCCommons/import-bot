@@ -193,13 +193,13 @@ def extract_nc_templates(page_text: str) -> List[NCTemplate]:
         if template_name == "nc":
             # Extract filename (first positional argument)
             filename = ""
-            arg1 = template.get_arg("1")
+            arg1 = template.get_arg("1") or template.get_arg("file")
             if arg1 and arg1.value:
                 filename = arg1.value.strip()
 
             # Extract caption (second positional argument, optional)
             caption = ""
-            arg2 = template.get_arg("2")
+            arg2 = template.get_arg("2") or template.get_arg("caption")
             if arg2 and arg2.value:
                 caption = arg2.value.strip()
 
