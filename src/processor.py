@@ -139,7 +139,7 @@ class PageProcessor:
         for template in templates:
             logger.info(f"Processing file: {template.filename}")
 
-            try:
+            #try:
                 result: Dict[str, any] = self._process_template(template)
 
                 if result["action"] == "exists":
@@ -163,8 +163,8 @@ class PageProcessor:
                 else:
                     logger.info(f"File not uploaded (error: {result.get('error')}): " f"{template.filename}")
 
-            except Exception as e:
-                logger.error(f"Exception uploading file {template.filename}: {e}")
+            #except Exception as e:
+                #logger.error(f"Exception uploading file {template.filename}: {e}")
                 # Continue processing other files even if one fails
 
         # Step 5-6: Update page if there are replacements
