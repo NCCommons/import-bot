@@ -137,9 +137,9 @@ class PageProcessor:
         files_duplicate: int = 0
 
         for template in templates:
-            logger.info(f"Processing file: {template.filename}")
+                logger.info(f"Processing file: {template.filename}")
 
-            #try:
+                #try:
                 result: Dict[str, any] = self._process_template(template)
 
                 if result["action"] == "exists":
