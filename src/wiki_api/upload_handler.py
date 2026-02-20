@@ -99,7 +99,7 @@ class UploadHandler:
 
         Raises:
             UploadByUrlDisabledError: If URL upload is not allowed.
-            Exception: For rate limiting errors (surfaced for retry logic).
+            RateLimitedError: If the server is rate limiting or throttling requests.
             InsufficientPermissionError: If user lacks upload permission.
             APIError: For other API errors.
             DuplicateFileError: If file content matches existing file.
@@ -317,8 +317,11 @@ class UploadHandler:
             return {"success": False, "error": "exists"}
 
         except InsufficientPermissionError:
-            logger.error(f"Insufficient permissions to upload for user {self.site.username} on {self.site.host}")
+            logger.exception(f"Insufficient permissions to upload for user {self.site.username} on {self.site.host}")
             return {"success": False, "error": "permission_denied"}
+        except RateLimitedError as e:
+            logger.error(f"Rate limited during upload: {str(e)}")
+            return {"success": False, "error": "rate_limited", "message": str(e)}
 
         except UploadByUrlDisabledError:
             logger.warning(f"URL upload disabled on {self.site.host}")
