@@ -75,11 +75,11 @@ class NCCommonsAPI(WikiAPI):
             rather than the main nccommons.org domain.
         """
         # Normalize filename with File: prefix
-        if not filename.lower().startswith("file:"):
-            filename = f"File:{filename}"
+        if filename.lower().startswith("file:"):
+            filename = filename[len("file:") :]
 
         logger.debug(f"Getting image URL for: {filename}")
-        page = self.site.pages[filename] or self.site.images[filename.removeprefix("File:")]
+        page = self.site.images[filename]
 
         if not page.exists:
             raise FileNotFoundError(f"File not found: {filename}")
