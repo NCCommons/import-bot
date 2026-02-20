@@ -79,7 +79,7 @@ class NCCommonsAPI(WikiAPI):
             filename = f"File:{filename}"
 
         logger.debug(f"Getting image URL for: {filename}")
-        page = self.site.images[filename]
+        page = self.site.images[filename] or self.site.images[filename.removeprefix("File:")]
 
         if not page.exists:
             raise FileNotFoundError(f"File not found: {filename}")
