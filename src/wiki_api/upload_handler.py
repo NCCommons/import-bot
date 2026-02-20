@@ -201,6 +201,7 @@ class UploadHandler:
             "filename": filename,
             "comment": comment,
             "text": text,
+            "assertuser": self.username,
             "token": self.site.get_token("edit"),
         }
 
