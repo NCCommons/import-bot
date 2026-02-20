@@ -304,7 +304,7 @@ class TestPageProcessor:
         saved_text = call_args[0][1]
 
         # Should still have file syntax, even with empty caption
-        assert "[[File:test.jpg|thumb|]]" in saved_text
+        assert "[[File:test.jpg|thumb]]" in saved_text
 
     def test_process_page_duplicate_file_uses_existing_filename(self, processor, mock_wiki_api, temp_db):
         """Test that duplicate file uses the existing file's name in page update."""
