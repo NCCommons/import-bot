@@ -78,6 +78,7 @@ class TestHandleApiResult:
         """Test handling of rate limited error."""
         from unittest.mock import Mock
 
+        from src.wiki_api.api_errors import RateLimitedError
         from src.wiki_api.upload_handler import UploadHandler
 
         mock_site = Mock()
@@ -85,13 +86,14 @@ class TestHandleApiResult:
 
         info = {"error": {"code": "ratelimited", "info": "Rate limit exceeded"}}
 
-        with pytest.raises(Exception, match="ratelimited"):
+        with pytest.raises(RateLimitedError, match="ratelimited"):
             handler.handle_api_result(info, {})
 
     def test_throttled_error(self):
         """Test handling of throttled error."""
         from unittest.mock import Mock
 
+        from src.wiki_api.api_errors import RateLimitedError
         from src.wiki_api.upload_handler import UploadHandler
 
         mock_site = Mock()
@@ -99,7 +101,7 @@ class TestHandleApiResult:
 
         info = {"error": {"code": "throttled", "info": "Request throttled"}}
 
-        with pytest.raises(Exception, match="ratelimited"):
+        with pytest.raises(RateLimitedError, match="throttled"):
             handler.handle_api_result(info, {})
 
     def test_rate_in_code_error(self):

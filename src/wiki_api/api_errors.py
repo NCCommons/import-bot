@@ -10,6 +10,7 @@ Exception Hierarchy:
     ├── DuplicateFileError      - File content matches existing file
     ├── FileExistError          - File with same name already exists
     ├── InsufficientPermissionError - User lacks required permissions
+    ├── RateLimitedError            - Rate limiting or throttling in effect
     └── UploadByUrlDisabledError    - URL upload feature is disabled
 
 Example:
@@ -147,6 +148,46 @@ class InsufficientPermissionError(Exception):
             A string describing the permission issue.
         """
         return self.message or "Insufficient permissions to perform this action."
+
+
+class RateLimitedError(Exception):
+    """
+    Raised when API requests are rate limited or throttled by the server.
+
+    This exception occurs when the MediaWiki API returns a rate limiting error
+    such as 'ratelimited' or 'throttled'. Callers should catch this exception
+    and implement appropriate retry logic with exponential backoff.
+
+    Attributes:
+        message: The error message from the API, including the 'info' field.
+
+    Example:
+        >>> try:
+        ...     api.upload(file, "image.jpg", ...)
+        ... except RateLimitedError as e:
+        ...     logger.warning(f"Rate limited: {e}")
+        ...     time.sleep(RETRY_DELAY)
+        ...     retry_upload()
+    """
+
+    def __init__(self, message: Optional[str] = None) -> None:
+        """
+        Initialize RateLimitedError with optional context.
+
+        Args:
+            message: The error message from the API, typically containing the 'info' field.
+        """
+        self.message: Optional[str] = message
+        super().__init__(message or "Rate limited. Please try again later.")
+
+    def __str__(self) -> str:
+        """
+        Return a human-readable error message.
+
+        Returns:
+            A string describing the rate limiting issue.
+        """
+        return self.message or "Rate limited. Please try again later."
 
 
 class UploadByUrlDisabledError(Exception):

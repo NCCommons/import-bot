@@ -31,6 +31,7 @@ from .api_errors import (
     DuplicateFileError,
     FileExistError,
     InsufficientPermissionError,
+    RateLimitedError,
     UploadByUrlDisabledError,
 )
 
@@ -125,7 +126,7 @@ class UploadHandler:
 
             # Surface rate limiting for caller to handle (e.g., retry)
             if code in {"ratelimited", "throttled"}:
-                raise Exception(f"ratelimited: {err_info}")
+                raise RateLimitedError(f"{code}: {err_info}")
 
             # Permission issues
             if code in {"permissiondenied", "badtoken", "mwoauth-invalid-authorization"}:
