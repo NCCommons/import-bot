@@ -142,8 +142,8 @@ class PageProcessor:
             try:
                 result: Dict[str, any] = self._process_template(template)
 
-            except Exception as e:
-                logger.error(f"Exception uploading file {template.filename}: {e}")
+            except Exception:
+                logger.exception(f"Exception uploading file {template.filename}")
                 # Continue processing other files even if one fails
 
             if result["action"] == "exists":
@@ -266,8 +266,8 @@ class PageProcessor:
         summary: str = f"Bot: Imported {len(replacements)} file(s) from NC Commons"
         try:
             self.wiki_api.save_page(page_title, new_text, summary)
-        except Exception as e:
-            logger.error(f"Failed to save page {page_title}: {e}")
+        except Exception:
+            logger.exception(f"Failed to save page {page_title}")
             self._safe_record_page(page_title, templates_found, files_uploaded)
             return False
 
