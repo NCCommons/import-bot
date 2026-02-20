@@ -11,7 +11,7 @@ from src.wiki_api import WikiAPI
 @pytest.mark.network
 def test_pages_access_with_file_prefix():
     """Test accessing file via site.pages with File: prefix."""
-    api = WikiAPI("commons.wikimedia.org", "user", "pass")
+    api = WikiAPI("commons.wikimedia.org")
 
     # Access with File: prefix
     page = api.site.pages["File:Cardiovascular-disease-death-rates,_1980_to_2021,_DEU.svg"]
@@ -27,7 +27,7 @@ def test_pages_access_with_file_prefix():
 @pytest.mark.network
 def test_images_access_with_file_prefix():
     """Test accessing file via site.images with File: prefix."""
-    api = WikiAPI("commons.wikimedia.org", "user", "pass")
+    api = WikiAPI("commons.wikimedia.org")
 
     # Access with File: prefix
     page = api.site.images["File:Cardiovascular-disease-death-rates,_1980_to_2021,_DEU.svg"]

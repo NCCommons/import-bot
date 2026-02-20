@@ -98,8 +98,9 @@ class WikiAPI(UploadHandler):
         if not username or not password:
             if username or password:  # XOR: exactly one provided
                 logger.warning("Both username and password are required for login; skipping login")
-            return
+                return
 
+        # force_login Whether to require authentication when editing pages
         try:
             self.site: Site = Site(
                 site,
