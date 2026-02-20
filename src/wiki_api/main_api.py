@@ -23,7 +23,7 @@ Example:
 """
 
 import logging
-from typing import Any, BinaryIO, Optional
+from typing import Any, Optional
 
 import mwclient
 from mwclient.client import Site
@@ -106,8 +106,8 @@ class WikiAPI(UploadHandler):
                 clients_useragent="NC Commons Import Bot/1.0 (https://github.com/NCCommons)",
                 force_login=True,
             )
-        except Exception as e:
-            logger.error(f"Failed to connect to {site}: {e}")
+        except Exception:
+            logger.exception(f"Failed to connect to {site}")
             raise
 
         # Initialize upload handler with site connection

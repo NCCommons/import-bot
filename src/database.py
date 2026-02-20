@@ -39,7 +39,7 @@ import logging
 import sqlite3
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Any, Dict, Iterator, Optional
+from typing import Dict, Iterator, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -125,9 +125,9 @@ class Database:
         try:
             yield conn
             conn.commit()
-        except Exception as e:
+        except Exception:
             conn.rollback()
-            logger.error(f"Database error: {e}")
+            logger.exception(f"Database error")
             raise
         finally:
             conn.close()

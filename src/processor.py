@@ -26,7 +26,7 @@ Example:
 """
 
 import logging
-from typing import Dict, List, Optional
+from typing import Dict, List
 
 from .database import Database
 from .parsers import NCTemplate, extract_nc_templates
@@ -144,6 +144,7 @@ class PageProcessor:
 
             except Exception:
                 logger.exception(f"Exception uploading file {template.filename}")
+                continue
                 # Continue processing other files even if one fails
 
             if result["action"] == "exists":
@@ -322,5 +323,5 @@ class PageProcessor:
         """
         try:
             self.db.record_page_processing(page_title, self.wiki_api.lang, templates_found, files_uploaded)
-        except Exception as e:
-            logger.error(f"Failed to record page processing: {e}")
+        except Exception:
+            logger.exception("Failed to record page processing")

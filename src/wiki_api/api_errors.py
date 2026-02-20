@@ -22,8 +22,6 @@ Example:
     Cannot upload: example.jpg
 """
 
-from typing import Optional
-
 
 class DuplicateFileError(Exception):
     """
@@ -106,7 +104,7 @@ class FileExistError(Exception):
         Returns:
             A formatted string indicating the file exists and how to overwrite.
         """
-        return f"The file '{self.file_name}' already exists. " f"Set ignore=True to overwrite it."
+        return f"The file '{self.file_name}' already exists. Set ignore=True to overwrite it."
 
 
 class InsufficientPermissionError(Exception):
@@ -130,14 +128,14 @@ class InsufficientPermissionError(Exception):
         ...     raise
     """
 
-    def __init__(self, message: Optional[str] = None) -> None:
+    def __init__(self, message: str | None = None) -> None:
         """
         Initialize InsufficientPermissionError with optional context.
 
         Args:
             message: Optional additional context about the permission failure.
         """
-        self.message: Optional[str] = message
+        self.message: str = message
         super().__init__(message or "Insufficient permissions to perform this action.")
 
     def __str__(self) -> str:
@@ -170,15 +168,15 @@ class RateLimitedError(Exception):
         ...     retry_upload()
     """
 
-    def __init__(self, message: Optional[str] = None) -> None:
+    def __init__(self, message: str | None = None) -> None:
         """
         Initialize RateLimitedError with optional context.
 
         Args:
             message: The error message from the API, typically containing the 'info' field.
         """
-        self.message: Optional[str] = message
-        super().__init__(message or "Rate limited. Please try again later.")
+        self.message: str = message or "Rate limited. Please try again later."
+        super().__init__(self.message)
 
     def __str__(self) -> str:
         """
@@ -187,7 +185,7 @@ class RateLimitedError(Exception):
         Returns:
             A string describing the rate limiting issue.
         """
-        return self.message or "Rate limited. Please try again later."
+        return self.message
 
 
 class UploadByUrlDisabledError(Exception):
@@ -213,14 +211,14 @@ class UploadByUrlDisabledError(Exception):
         ...     result = api.upload_from_file("image.jpg", local_path, ...)
     """
 
-    def __init__(self, message: Optional[str] = None) -> None:
+    def __init__(self, message: str | None = None) -> None:
         """
         Initialize UploadByUrlDisabledError.
 
         Args:
             message: Optional additional context (default: standard disabled message).
         """
-        self.message: Optional[str] = message or "Upload by URL is disabled on this wiki."
+        self.message: str = message or "Upload by URL is disabled on this wiki."
         super().__init__(self.message)
 
     def __str__(self) -> str:

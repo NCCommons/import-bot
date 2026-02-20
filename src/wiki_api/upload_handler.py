@@ -317,7 +317,7 @@ class UploadHandler:
             return {"success": False, "error": "exists"}
 
         except InsufficientPermissionError:
-            logger.error(f"Insufficient permissions to upload for user {self.site.username} " f"on {self.site.host}")
+            logger.error(f"Insufficient permissions to upload for user {self.site.username} on {self.site.host}")
             return {"success": False, "error": "permission_denied"}
 
         except UploadByUrlDisabledError:
@@ -330,5 +330,5 @@ class UploadHandler:
             return {"success": False, "error": error_msg}
 
         except Exception as e:
-            logger.error(f"Unexpected error during upload: {e}")
+            logger.exception("Unexpected error during upload")
             return {"success": False, "error": str(e)}
