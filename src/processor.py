@@ -113,8 +113,8 @@ class PageProcessor:
         # Step 1: Fetch page content
         try:
             page_text: str = self.wiki_api.get_page_text(page_title)
-        except Exception as e:
-            logger.exception(f"Failed to fetch page {page_title}: {e}")
+        except Exception:
+            logger.exception(f"Failed to fetch page {page_title}")
             # Record the attempt even though it failed
             self._safe_record_page(page_title, 0, 0)
             return False
@@ -137,35 +137,35 @@ class PageProcessor:
         files_duplicate: int = 0
 
         for template in templates:
-                logger.info(f"Processing file: {template.filename}")
+            logger.info(f"Processing file: {template.filename}")
 
-                #try:
+            try:
                 result: Dict[str, any] = self._process_template(template)
 
-                if result["action"] == "exists":
-                    files_changed += 1
-                    files_exists += 1
-                    replacements[template.original_text] = result["replacement"]
-                    logger.info(f"File already exists: {template.filename}")
-
-                elif result["action"] == "uploaded":
-                    files_changed += 1
-                    files_uploaded += 1
-                    replacements[template.original_text] = result["replacement"]
-                    logger.info(f"File uploaded successfully: {template.filename}")
-
-                elif result["action"] == "duplicate":
-                    files_changed += 1
-                    files_duplicate += 1
-                    replacements[template.original_text] = result["replacement"]
-                    logger.info(f"File is duplicate of {result['duplicate_of']}, using existing")
-
-                else:
-                    logger.info(f"File not uploaded (error: {result.get('error')}): " f"{template.filename}")
-
-            #except Exception as e:
-                #logger.error(f"Exception uploading file {template.filename}: {e}")
+            except Exception as e:
+                logger.error(f"Exception uploading file {template.filename}: {e}")
                 # Continue processing other files even if one fails
+
+            if result["action"] == "exists":
+                files_changed += 1
+                files_exists += 1
+                replacements[template.original_text] = result["replacement"]
+                logger.info(f"File already exists: {template.filename}")
+
+            elif result["action"] == "uploaded":
+                files_changed += 1
+                files_uploaded += 1
+                replacements[template.original_text] = result["replacement"]
+                logger.info(f"File uploaded successfully: {template.filename}")
+
+            elif result["action"] == "duplicate":
+                files_changed += 1
+                files_duplicate += 1
+                replacements[template.original_text] = result["replacement"]
+                logger.info(f"File is duplicate of {result['duplicate_of']}, using existing")
+
+            else:
+                logger.info(f"File not uploaded (error: {result.get('error')}): {template.filename}")
 
         # Step 5-6: Update page if there are replacements
         if replacements:
