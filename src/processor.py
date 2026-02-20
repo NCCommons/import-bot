@@ -114,7 +114,7 @@ class PageProcessor:
         try:
             page_text: str = self.wiki_api.get_page_text(page_title)
         except Exception as e:
-            logger.error(f"Failed to fetch page {page_title}: {e}")
+            logger.exception(f"Failed to fetch page {page_title}: {e}")
             # Record the attempt even though it failed
             self._safe_record_page(page_title, 0, 0)
             return False
@@ -212,7 +212,7 @@ class PageProcessor:
                 "replacement": template.to_file_syntax(),
             }
 
-        elif result.get("error") == "exists":
+        elif result.get("error") in ("exists", "already_uploaded"):
             return {
                 "action": "exists",
                 "replacement": template.to_file_syntax(),
