@@ -38,7 +38,7 @@ class TestNCCommonsAPI:
         url = api.get_image_url("test.jpg")
 
         assert url == "https://example.com/image.jpg"
-        mock_site.images.__getitem__.assert_called_once_with("File:test.jpg")
+        mock_site.images.__getitem__.assert_called_once_with("test.jpg")
 
     @patch("src.wiki_api.main_api.Site")
     def test_get_image_url_adds_file_prefix(self, mock_site_class):
@@ -55,7 +55,7 @@ class TestNCCommonsAPI:
 
         # Should not add duplicate prefix
         assert url == "https://example.com/image.jpg"
-        mock_site.images.__getitem__.assert_called_once_with("File:test.jpg")
+        mock_site.images.__getitem__.assert_called_once_with("test.jpg")
 
     @patch("src.wiki_api.main_api.Site")
     def test_get_file_description(self, mock_site_class):

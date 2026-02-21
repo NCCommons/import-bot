@@ -22,6 +22,7 @@ class TestHandleApiResult:
     def test_empty_api_response(self):
         """Test handling of empty API response."""
         from unittest.mock import Mock
+
         from src.wiki_api.upload_handler import UploadHandler
 
         mock_site = Mock()
@@ -34,6 +35,7 @@ class TestHandleApiResult:
     def test_empty_dict_api_response(self):
         """Test handling of empty dict API response."""
         from unittest.mock import Mock
+
         from src.wiki_api.upload_handler import UploadHandler
 
         mock_site = Mock()
@@ -47,6 +49,7 @@ class TestHandleApiResult:
     def test_copyuploaddisabled_error(self):
         """Test handling of upload by URL disabled error."""
         from unittest.mock import Mock
+
         from src.wiki_api.upload_handler import UploadHandler
 
         mock_site = Mock()
@@ -60,6 +63,7 @@ class TestHandleApiResult:
     def test_upload_by_url_disabled_case_insensitive(self):
         """Test handling of upload by URL disabled error (case insensitive match)."""
         from unittest.mock import Mock
+
         from src.wiki_api.upload_handler import UploadHandler
 
         mock_site = Mock()
@@ -73,6 +77,8 @@ class TestHandleApiResult:
     def test_ratelimited_error(self):
         """Test handling of rate limited error."""
         from unittest.mock import Mock
+
+        from src.wiki_api.api_errors import RateLimitedError
         from src.wiki_api.upload_handler import UploadHandler
 
         mock_site = Mock()
@@ -80,12 +86,14 @@ class TestHandleApiResult:
 
         info = {"error": {"code": "ratelimited", "info": "Rate limit exceeded"}}
 
-        with pytest.raises(Exception, match="ratelimited"):
+        with pytest.raises(RateLimitedError, match="ratelimited"):
             handler.handle_api_result(info, {})
 
     def test_throttled_error(self):
         """Test handling of throttled error."""
         from unittest.mock import Mock
+
+        from src.wiki_api.api_errors import RateLimitedError
         from src.wiki_api.upload_handler import UploadHandler
 
         mock_site = Mock()
@@ -93,12 +101,13 @@ class TestHandleApiResult:
 
         info = {"error": {"code": "throttled", "info": "Request throttled"}}
 
-        with pytest.raises(Exception, match="ratelimited"):
+        with pytest.raises(RateLimitedError, match="throttled"):
             handler.handle_api_result(info, {})
 
     def test_rate_in_code_error(self):
         """Test handling of error with 'rate' in code."""
         from unittest.mock import Mock
+
         from src.wiki_api.upload_handler import UploadHandler
 
         mock_site = Mock()
@@ -112,6 +121,7 @@ class TestHandleApiResult:
     def test_permission_denied_error(self):
         """Test handling of permission denied error."""
         from unittest.mock import Mock
+
         from src.wiki_api.upload_handler import UploadHandler
 
         mock_site = Mock()
@@ -125,6 +135,7 @@ class TestHandleApiResult:
     def test_badtoken_error(self):
         """Test handling of bad token error."""
         from unittest.mock import Mock
+
         from src.wiki_api.upload_handler import UploadHandler
 
         mock_site = Mock()
@@ -138,6 +149,7 @@ class TestHandleApiResult:
     def test_mwoauth_invalid_authorization_error(self):
         """Test handling of OAuth invalid authorization error."""
         from unittest.mock import Mock
+
         from src.wiki_api.upload_handler import UploadHandler
 
         mock_site = Mock()
@@ -151,6 +163,7 @@ class TestHandleApiResult:
     def test_generic_api_error(self):
         """Test handling of generic API error."""
         from unittest.mock import Mock
+
         from src.wiki_api.upload_handler import UploadHandler
 
         mock_site = Mock()
@@ -164,6 +177,7 @@ class TestHandleApiResult:
     def test_success_result(self):
         """Test handling of successful upload result."""
         from unittest.mock import Mock
+
         from src.wiki_api.upload_handler import UploadHandler
 
         mock_site = Mock()
@@ -179,6 +193,7 @@ class TestHandleApiResult:
     def test_duplicate_warning(self):
         """Test handling of duplicate file warning."""
         from unittest.mock import Mock
+
         from src.wiki_api.upload_handler import UploadHandler
 
         mock_site = Mock()
@@ -195,6 +210,7 @@ class TestHandleApiResult:
     def test_exists_warning(self):
         """Test handling of file exists warning."""
         from unittest.mock import Mock
+
         from src.wiki_api.upload_handler import UploadHandler
 
         mock_site = Mock()
@@ -210,6 +226,7 @@ class TestHandleApiResult:
     def test_unknown_result_returns_true(self):
         """Test handling of unknown result returns True."""
         from unittest.mock import Mock
+
         from src.wiki_api.upload_handler import UploadHandler
 
         mock_site = Mock()
@@ -228,6 +245,7 @@ class TestMwclientUpload:
     def test_filename_required(self):
         """Test that filename parameter is required."""
         from unittest.mock import Mock
+
         from src.wiki_api.upload_handler import UploadHandler
 
         mock_site = Mock()
@@ -239,6 +257,7 @@ class TestMwclientUpload:
     def test_default_comment_equals_description(self):
         """Test that default comment equals description."""
         from unittest.mock import Mock
+
         from src.wiki_api.upload_handler import UploadHandler
 
         mock_site = Mock()
@@ -256,6 +275,7 @@ class TestMwclientUpload:
     def test_url_upload(self):
         """Test upload with URL parameter."""
         from unittest.mock import Mock
+
         from src.wiki_api.upload_handler import UploadHandler
 
         mock_site = Mock()
@@ -279,6 +299,7 @@ class TestMwclientUpload:
     def test_file_upload_with_file_object(self):
         """Test upload with file-like object."""
         from unittest.mock import Mock
+
         from src.wiki_api.upload_handler import UploadHandler
 
         mock_site = Mock()
@@ -296,6 +317,7 @@ class TestMwclientUpload:
     def test_empty_response_handling(self):
         """Test handling of empty response from raw_call."""
         from unittest.mock import Mock
+
         from src.wiki_api.upload_handler import UploadHandler
 
         mock_site = Mock()
@@ -310,6 +332,7 @@ class TestMwclientUpload:
     def test_api_deprecation_warning_cleanup(self):
         """Test cleanup of API deprecation warning in error."""
         from unittest.mock import Mock
+
         from src.wiki_api.upload_handler import UploadHandler
 
         mock_site = Mock()

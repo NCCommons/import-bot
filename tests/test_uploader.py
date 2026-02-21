@@ -76,9 +76,7 @@ class TestFileUploader:
 
     @patch("urllib.request.urlretrieve")
     @patch("src.uploader.TemporaryDownloadFile")
-    def test_upload_via_download_success(
-        self, mock_temp_class, mock_retrieve, uploader, mock_wiki_api, temp_db
-    ):
+    def test_upload_via_download_success(self, mock_temp_class, mock_retrieve, uploader, mock_wiki_api, temp_db):
         """Test successful upload via download method."""
         # Setup temp file mock with context manager support
         mock_temp = Mock()
@@ -105,9 +103,7 @@ class TestFileUploader:
 
     @patch("urllib.request.urlretrieve")
     @patch("src.uploader.TemporaryDownloadFile")
-    def test_upload_via_download_exists(
-        self, mock_temp_class, mock_retrieve, uploader, mock_wiki_api, temp_db
-    ):
+    def test_upload_via_download_exists(self, mock_temp_class, mock_retrieve, uploader, mock_wiki_api, temp_db):
         """Test upload via download with exists file."""
         mock_temp = Mock()
         mock_temp.__enter__ = Mock(return_value="/tmp/test123.tmp")
@@ -125,9 +121,7 @@ class TestFileUploader:
 
     @patch("urllib.request.urlretrieve")
     @patch("src.uploader.TemporaryDownloadFile")
-    def test_upload_via_download_cleanup_on_error(
-        self, mock_temp_class, mock_retrieve, uploader, mock_wiki_api
-    ):
+    def test_upload_via_download_cleanup_on_error(self, mock_temp_class, mock_retrieve, uploader, mock_wiki_api):
         """Test temp file cleanup on error."""
         mock_temp = Mock()
         mock_temp.__enter__ = Mock(return_value="/tmp/test123.tmp")
@@ -258,7 +252,11 @@ class TestFileUploader:
         """Test handling duplicate file via URL method."""
         mock_nc_api.get_image_url.return_value = "https://nccommons.org/dup.jpg"
         mock_nc_api.get_file_description.return_value = "Description"
-        mock_wiki_api.upload_from_url.return_value = {"success": False, "error": "duplicate", "duplicate_of": "existing.jpg"}
+        mock_wiki_api.upload_from_url.return_value = {
+            "success": False,
+            "error": "duplicate",
+            "duplicate_of": "existing.jpg",
+        }
         mock_wiki_api.lang = "en"
 
         result = uploader.upload_file("dup.jpg")
@@ -280,7 +278,11 @@ class TestFileUploader:
         mock_temp.__exit__ = Mock(return_value=None)
         mock_temp_class.return_value = mock_temp
 
-        mock_wiki_api.upload_from_file.return_value = {"success": False, "error": "duplicate", "duplicate_of": "other.jpg"}
+        mock_wiki_api.upload_from_file.return_value = {
+            "success": False,
+            "error": "duplicate",
+            "duplicate_of": "other.jpg",
+        }
 
         result = uploader._upload_via_download("dup.jpg", "https://example.com/dup.jpg", "Description", "Comment", "en")
 

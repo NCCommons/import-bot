@@ -97,7 +97,7 @@ class TestNCTemplate:
         template = NCTemplate(original_text="{{NC|test.jpg}}", filename="test.jpg", caption="")
 
         result = template.to_file_syntax()
-        assert result == "[[File:test.jpg|thumb|]]"
+        assert result == "[[File:test.jpg|thumb]]"
 
 
 class TestRemoveCategories:

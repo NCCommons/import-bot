@@ -5,6 +5,7 @@ A simple bot to import files from NC Commons to Wikipedia.
 """
 
 from pathlib import Path
+
 from .logging_config import setup_logging
 
 _dir = Path(__file__).parent.name

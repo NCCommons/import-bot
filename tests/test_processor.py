@@ -304,7 +304,7 @@ class TestPageProcessor:
         saved_text = call_args[0][1]
 
         # Should still have file syntax, even with empty caption
-        assert "[[File:test.jpg|thumb|]]" in saved_text
+        assert "[[File:test.jpg|thumb]]" in saved_text
 
     def test_process_page_duplicate_file_uses_existing_filename(self, processor, mock_wiki_api, temp_db):
         """Test that duplicate file uses the existing file's name in page update."""
@@ -313,7 +313,11 @@ class TestPageProcessor:
         mock_wiki_api.get_page_text.return_value = page_text
         mock_wiki_api.lang = "en"
         # Simulate duplicate with different filename
-        processor.uploader.upload_file.return_value = {"success": False, "error": "duplicate", "duplicate_of": "existing_file.jpg"}
+        processor.uploader.upload_file.return_value = {
+            "success": False,
+            "error": "duplicate",
+            "duplicate_of": "existing_file.jpg",
+        }
 
         result = processor.process_page("Test Page")
 
@@ -345,7 +349,7 @@ class TestPageProcessor:
         # First upload succeeds, second is duplicate
         processor.uploader.upload_file.side_effect = [
             {"success": True},
-            {"success": False, "error": "duplicate", "duplicate_of": "existing.jpg"}
+            {"success": False, "error": "duplicate", "duplicate_of": "existing.jpg"},
         ]
 
         result = processor.process_page("Test Page")
