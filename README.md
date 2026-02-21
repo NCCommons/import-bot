@@ -157,7 +157,11 @@ Make sure you copied `.env.example` to `.env` and filled in your credentials.
 
 -   For Wikipedia: Use bot password format (`BotName@BotPassword`, not your main password)
 -   Check that credentials are correct
--   Ensure bot has appropriate permissions
+-   Ensure bot has appropriate permissions:
+    - Edit existing pages
+    - Create, edit, and move pages
+    - Upload new files
+    - Upload, replace, and move files
 
 ### "Upload failed: copyupload"
 
