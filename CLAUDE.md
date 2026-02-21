@@ -63,6 +63,11 @@ bot.py (entry point)
 - `config.yaml`: Main config (site URLs, limits, logging, database path)
 - `.env`: Credentials (NCCOMMONS_USERNAME/PASSWORD, WIKIPEDIA_USERNAME/PASSWORD)
   - Wikipedia uses bot password format: `BotName@BotPassword`
+  - Required bot password permissions:
+    - Edit existing pages
+    - Create, edit, and move pages
+    - Upload new files
+    - Upload, replace, and move files
 
 ## Code Style
 
