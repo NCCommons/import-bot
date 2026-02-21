@@ -76,7 +76,7 @@ class NCCommonsAPI(WikiAPI):
         """
         # Normalize filename with File: prefix
         if filename.lower().startswith("file:"):
-            filename = filename[len("file:") :]
+            filename = filename[5:]
 
         logger.debug(f"Getting image URL for: {filename}")
         page = self.site.images[filename]

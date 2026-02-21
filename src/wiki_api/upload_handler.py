@@ -216,7 +216,7 @@ class UploadHandler:
             file = cast(BinaryIO, file)
             file.seek(0)
 
-            # Workaround for mwclient issue #65:
+            # Workaround for mwclient issue https://github.com/mwclient/mwclient/issues/65:
             # The Content-Disposition filename is not interpreted, so we can
             # use an ASCII-only dummy name to avoid encoding issues with
             # non-ASCII filenames.
